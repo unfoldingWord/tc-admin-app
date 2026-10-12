@@ -1,0 +1,22 @@
+[
+  {
+    "tag_name": "v2.0.0",
+    "prerelease": false,
+    "target_commitish": "da0906fe366ecbe0c00250f054cae4d310e0d4f9"
+  },
+  {
+    "tag_name": "v1.2.2",
+    "prerelease": false,
+    "target_commitish": "2d865cbc8329bbb19eb2eefe6508f753124697d4"
+  },
+  {
+    "tag_name": "v1.2.1",
+    "prerelease": false,
+    "target_commitish": "ec92c3efcb00948d07d67c08bea9ae43365625fe"
+  },
+  {
+    "tag_name": "v1.2",
+    "prerelease": false,
+    "target_commitish": "master"
+  }
+]
