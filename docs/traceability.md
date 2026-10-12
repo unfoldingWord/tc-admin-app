@@ -14,7 +14,7 @@ Keep this file current: an issue's Traceability section and its row here say the
 | Issue | Spec | ADR | Invariants | Evidence / questions | Operations | Layer | Scenarios |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [#1](https://github.com/unfoldingWord-box3/tc-admin-app/issues/1) tc-admin-qa organization | roadmap M1 | — | — | E9 | — | environment | — |
-| [#2](https://github.com/unfoldingWord-box3/tc-admin-app/issues/2) OAuth applications | §2 | 0001 | A1 | Q9, Q10 | `situation.read` | door43/auth | — |
+| [#2](https://github.com/unfoldingWord-box3/tc-admin-app/issues/2) OAuth applications | §2 | 0001 | A1 | E38, E85, Q9, Q10 | `situation.read` | door43/auth | — |
 | [#3](https://github.com/unfoldingWord-box3/tc-admin-app/issues/3) Rebuild the standard QA test projects after each reset | roadmap M1 | 0012 | W1, W5, X1 | E9, E23, E26, E49, E58, E69, E74, E80, E82, E83, Q9 | `project.create.plan`, `project.create.apply`, `source.search`, `import.plan`, `import.apply`, `release.plan`, `release.prepare`, `preparation.read`, `release.create` | scripts/seed-qa | — |
 | [#4](https://github.com/unfoldingWord-box3/tc-admin-app/issues/4) OAuth survives reset | §2 | 0001 | A1 | Q9, E82 | — | [deployment.md](deployment.md) §6 | — |
 | [#5](https://github.com/unfoldingWord-box3/tc-admin-app/issues/5) Health latency | §9 | 0007 | H2 | Q2 | `preparation.read` | door43/health | — |
@@ -25,7 +25,7 @@ Keep this file current: an issue's Traceability section and its row here say the
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [#7](https://github.com/unfoldingWord-box3/tc-admin-app/issues/7) Scaffold web/ worker/ shared/ | arch §1, §10; deployment | 0011, 0012 | — (creates the enforcement points; carries over the prototype's tests for H1, H3, P1, P2, A1, A3; X2, X3 at `http/errors`) | Q26, Q27 | all (schemas); `situation.read` without a session | every layer | — |
 | [#8](https://github.com/unfoldingWord-box3/tc-admin-app/issues/8) Design system | §5 | — | H4 | — | — | web | — |
-| [#9](https://github.com/unfoldingWord-box3/tc-admin-app/issues/9) Deploy to workers.dev | arch §9 | 0001 | A1 | — | — | worker/http, wrangler | — |
+| [#9](https://github.com/unfoldingWord-box3/tc-admin-app/issues/9) Deploy to workers.dev | arch §9 | 0001 | A1 | E85 | — | worker/http, wrangler | — |
 | [#154](https://github.com/unfoldingWord/tc-admin-app/issues/154) The design system's tokens and font, and a title for each page | §5 | — | H4 | — | — | web (app.css, public/fonts, App, Portfolio, the views' headings) | — |
 | [#10](https://github.com/unfoldingWord-box3/tc-admin-app/issues/10) Test harness and fixtures | arch §10 | 0012 | all (test naming), A1 | E1–E5, E7, E70 | — | test, fixtures, e2e | — |
 
