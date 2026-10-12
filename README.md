@@ -140,7 +140,7 @@ It builds three projects through the Worker's own operations:
 - `tc-admin-qa-org/en_seedobs`: Open Bible Stories with a full release.
 - `tc-admin-qa/id_seedhf`: a Bible that has never been released, so it has health findings.
 
-Running it twice is safe: it leaves alone any project that already exists. It needs a `TEST_TOKEN` issued by QA, since a token works only on the host that issued it (E23), and it refuses any other host. A reset keeps the QA OAuth application and the Worker's secrets, so sign-in works after one, and removes a QA-issued token: reissue `TEST_TOKEN` on QA before running it (E82, [docs/deployment.md](docs/deployment.md) §6).
+Running it twice is safe: it leaves alone any project that already exists. It needs a `TEST_TOKEN` issued by QA, since a token works only on the host that issued it (E23), and it refuses any other host. A reset keeps the QA OAuth application, the Worker's secrets, and `TEST_TOKEN`, which is issued on production so that each reset copies it to QA, so both sign-in and this script work after one (E82, E83, [docs/deployment.md](docs/deployment.md) §6).
 
 ## How we build it
 
