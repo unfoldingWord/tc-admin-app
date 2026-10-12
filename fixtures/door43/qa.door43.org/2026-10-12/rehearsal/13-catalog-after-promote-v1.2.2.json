@@ -1,0 +1,13 @@
+{
+  "catalog": {
+    "prod": {
+      "branch_or_tag_name": "v1.2.2",
+      "commit_sha": "2d865cbc8329bbb19eb2eefe6508f753124697d4"
+    },
+    "preprod": null,
+    "latest": {
+      "branch_or_tag_name": "master",
+      "commit_sha": "537e69a50c7d532b8401ed5bf961754782f0c65a"
+    }
+  }
+}
