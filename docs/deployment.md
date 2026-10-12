@@ -87,6 +87,15 @@ Never paste a secret into a chat with an agent. If a value must reach an agent s
 
 Copy `.env.example` to `.env` with the QA OAuth client, then `npm run dev` builds the web app and runs the Worker locally (`wrangler dev`, the top level of `wrangler.jsonc`) against QA, with local KV. For reloads while editing the interface, run `npx wrangler dev` and `npm run dev --workspace web` side by side; Vite sends `/api/` and `/auth/` to the Worker, presenting the Worker's own origin so the same-origin check on mutations passes (A4). The QA test user's credentials (`TEST_ORG`, `TEST_USER`, `TEST_PASSWORD`, `TEST_TOKEN`, E23) are for probes and the Playwright smoke test, never for the application itself, which always acts as the signed-in manager (A3).
 
+## 6. After a QA reset
+
+QA Door43 becomes a copy of production each Monday (E23). Observed at the 12 October 2026 reset (E82): the QA Worker and its OAuth registration need nothing. Sign-in on `https://tc-admin-qa.unfoldingword.workers.dev` works as before, with the client id, secret, and signing key the Worker already holds (Q9, #4). What the reset does take away, and what to do, in order:
+
+1. **Reissue the QA API token.** A token works only on the host that issued it, and the reset removes QA's. Rich, signed in on `https://qa.door43.org` as `tc-admin-qa`, issues a token with `read:user`, `write:user`, `write:repository`, and `write:organization` (E49, Q28) and puts it in `.env` as `TEST_TOKEN`: never in the repository, a log, or a chat.
+2. **Check sign-in.** `E2E_HEADLESS=1 npm run e2e` signs in through the deployed QA Worker (E76). If it fails on QA's authorization page, look at the QA OAuth application's settings on qa.door43.org first: E38 lists the redirect URIs it must have.
+3. **Rebuild the standard test projects.** `node --env-file=.env scripts/seed-qa.mjs` (#3); a second run changes nothing. Record the run in the evidence register with the date of the reset it followed.
+4. **Know what else is gone.** Every repository, commit, release, and tag made on QA since the previous reset, a rehearsal's included (E58). `bahtraku/Perjanjian-Baru-Pendau` is production's again, which is the state a demo rehearsal needs ([demo-script.md](demo-script.md)). The QA Worker's KV keeps stored preparations and release records for 30 days across a reset; a plan or a lookup reads Door43 live (E58).
+
 ## Appendix: deploying from GitHub Actions instead
 
 If the Git integration is ever unavailable, the alternative is a GitHub Actions workflow running Wrangler with an account-scoped API token (Cloudflare: My Profile → API Tokens → *Edit Cloudflare Workers* template plus Workers KV Storage: Edit) stored as the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, with a `production` GitHub environment requiring Rich's review. Previews would use `npx wrangler versions upload --env qa --preview-alias preview`, giving one fixed URL `preview-tc-admin-qa.<subdomain>.workers.dev` that the QA OAuth application can register. Everything else in this document stays the same.
