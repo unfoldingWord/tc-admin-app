@@ -170,7 +170,7 @@ Was blocking: #35. Resolved as (a) for ingredients with every top-level field re
 
 ### Q9 — Does the OAuth registration survive a QA reset? (closed)
 **Closed 12 October 2026 (E82):** yes. After the 12 October reset, with nothing changed on the QA Worker and nothing re-registered on QA, the end-to-end sign-in through the deployed QA Worker completed. No step follows a reset for the registration. What a reset does take away, a QA-issued API token and everything created on QA, and what to do about it, is E82 and docs/deployment.md §6, the runbook #4 asked for.
-The question as it was put, kept for the record. Blocks: #4, #12 on QA. Owner: Rich. Close by: #4 after the next reset; result recorded here and in the runbook.
+The question as it was put, kept for the record. It blocked #4 and #12 on QA; owner Rich; closed by #4 and E82 after the 12 October 2026 reset.
 
 ### Q10 — Which Door43 OAuth token permissions do the Milestone 1 writes need? (closed)
 **Decided 22 September 2026 by Rich:** `read:user write:repository write:organization`; these are the permissions a signed-in user has with DCS. The QA write probe (`scripts/probe/qa-write-probe.mjs`) records each operation succeeding with them. Recorded in #2, #12, architecture §8.
