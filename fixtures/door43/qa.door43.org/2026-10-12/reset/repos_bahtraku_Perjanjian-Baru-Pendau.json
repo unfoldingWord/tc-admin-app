@@ -1,0 +1,15 @@
+{
+  "full_name": "bahtraku/Perjanjian-Baru-Pendau",
+  "default_branch": "master",
+  "updated_at": "2026-07-21T04:42:35Z",
+  "catalog": {
+    "prod": {
+      "branch_or_tag_name": "v1.2",
+      "commit_sha": "2d9dbd1ee09b5a1c28edd8668462f6a64029619b"
+    },
+    "latest": {
+      "branch_or_tag_name": "master",
+      "commit_sha": "2d9dbd1ee09b5a1c28edd8668462f6a64029619b"
+    }
+  }
+}
