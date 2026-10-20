@@ -27,7 +27,7 @@ describe('requests', () => {
 });
 
 describe('responses', () => {
-  const situation = { account: null, host: { origin: 'https://qa.door43.org', name: 'QA', development: true }, portfolio: null, configured: false };
+  const situation = { account: null, host: { origin: 'https://qa.door43.org', name: 'QA', development: true }, portfolio: null, configured: false, application: { name: 'tC Admin', version: '0.1.0', commit: null } };
 
   test('the output is parsed against the operation schema', async () => {
     const result = await callOperation('situation.read', {}, async () => new Response(JSON.stringify(situation)));
@@ -50,7 +50,7 @@ describe('responses', () => {
 
 describe('the CSRF token (A4)', () => {
   afterEach(() => forgetCsrfToken());
-  const situation = { account: { login: 'm', name: 'M' }, host: { origin: 'https://qa.door43.org', name: 'QA', development: true }, portfolio: null, configured: true };
+  const situation = { account: { login: 'm', name: 'M' }, host: { origin: 'https://qa.door43.org', name: 'QA', development: true }, portfolio: null, configured: true, application: { name: 'tC Admin', version: '0.1.0', commit: null } };
   const lookup = { found: false, release: null };
 
   /** A Worker that issues `token` on every response and records what it was sent; an apply is answered outside its schema, which the caller ignores. */

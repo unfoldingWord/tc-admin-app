@@ -161,7 +161,7 @@ Each entry: what it needs, what it checks, what it reads and writes on Door43, w
 The orientation call. One request tells a client who is signed in, which host, and how the portfolio stands.
 
 - Inputs: none.
-- Returns: `{ account: { login, name }, host: { origin, name: QA | Production, development }, portfolio: { projects, writable_organizations, needs_attention, awaiting_check, last_loaded_at } | null, configured }`.
+- Returns: `{ account: { login, name }, host: { origin, name: QA | Production, development }, portfolio: { projects, writable_organizations, needs_attention, awaiting_check, last_loaded_at } | null, configured, application: { name, version, commit } }`. `application` says what this Worker runs: the name and version from the root `package.json` (the `softwareVersion` it writes, W1) and the commit the build recorded in `build-info.json` beside the page, `null` when none was (a local build outside Git, a test); the page's footer shows the same (deployment.md §4).
 - Door43 reads: `/user` when a session exists.
 - Errors: `session_expired`, `door43_unavailable`.
 

@@ -159,6 +159,8 @@ export const OPERATIONS = {
         })
         .nullable(),
       configured: z.boolean(),
+      /** What this Worker runs: the name and version from the root package.json, and the commit the build recorded (`null` when none was). */
+      application: z.object({ name: z.string(), version: z.string(), commit: z.string().nullable() }),
     }),
   },
   'portfolio.list': {

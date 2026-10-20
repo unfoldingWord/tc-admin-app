@@ -13,7 +13,7 @@ import { rememberReturn, saveDraft, takeReturn } from '../src/resume';
 import { freshness, heldWorker, projectOf } from './support/mounted';
 
 const host = { origin: 'https://qa.door43.org', name: 'QA', development: true };
-const situation = (account: { login: string; name: string } | null) => ({ account, host, portfolio: null, configured: true });
+const situation = (account: { login: string; name: string } | null) => ({ account, host, portfolio: null, configured: true, application: { name: 'tC Admin', version: '0.1.0', commit: null } });
 const PENDAU = projectOf('bahtraku', 'Perjanjian-Baru-Pendau', 'bible');
 const PREPARATION = '#/bahtraku/Perjanjian-Baru-Pendau/release/v1.3.0';
 

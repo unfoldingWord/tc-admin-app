@@ -149,6 +149,13 @@ export function App() {
         )}
         {situation?.account && !error && <Portfolio account={situation.account} onFailure={portfolioFailed} />}
       </main>
+      {situation && (
+        <footer>
+          {situation.application.name} {situation.application.version}
+          {situation.application.commit && ` · ${situation.application.commit.slice(0, 7)}`}
+          {host && ` · ${host.name}`}
+        </footer>
+      )}
     </>
   );
 }
