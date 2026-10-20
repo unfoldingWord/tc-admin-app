@@ -1,0 +1,14 @@
+# Generated release notes (ADR 0015): pull requests merged since the previous tag,
+# grouped by label. Label every pull request to `main` with one of these.
+changelog:
+  exclude:
+    labels: [duplicate, invalid, wontfix]
+  categories:
+    - title: Features
+      labels: [enhancement]
+    - title: Fixes
+      labels: [bug]
+    - title: Documents
+      labels: [documentation]
+    - title: Other
+      labels: ["*"]

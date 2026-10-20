@@ -127,6 +127,7 @@ The metadata editor, Setup-incomplete recovery beyond a retry link, accessibilit
 
 **Target:** November 2026
 **Acceptance owner:** Birch
+**Started:** 20 October 2026, on `main`, with production at `v0.1.0` (the first GitHub release, from the `production` branch); Milestone 2 work merges to `main` and reaches production only by a release pull request (ADR 0015, docs/deployment.md §4).
 
 ### Epics
 

@@ -1,0 +1,39 @@
+name: release
+
+# On every push to `production` (a release or a hotfix pull request merged, ADR 0015):
+# tag the commit `v<version>` from the root package.json, unless that tag exists,
+# and publish a GitHub release whose notes are generated from the merged pull
+# requests since the previous tag (.github/release.yml groups them by label).
+# Deploying is Cloudflare Workers Builds' job, on the same push (docs/deployment.md §2).
+
+on:
+  push:
+    branches: [production]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Tag and publish the release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read the version
+        id: version
+        run: echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Tag and release, unless the tag exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "$TAG already exists at $(git rev-parse --short "$TAG"); nothing to do"
+            exit 0
+          fi
+          previous=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          echo "creating $TAG at $GITHUB_SHA${previous:+, notes since $previous}"
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" --generate-notes \
+            ${previous:+--notes-start-tag "$previous"}
