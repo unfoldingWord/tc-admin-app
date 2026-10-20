@@ -30,7 +30,7 @@ Each step: what the presenter does, the operation the interface calls, what Door
 
 ### 1. Sign in and the portfolio (S1 precondition, P1, P2)
 
-- Open the production address; "Sign in with Door43 PROD". Operation: `/auth/login`, then `situation.read`.
+- Open `https://admin.translationcore.com` (E86); "Sign in with Door43 PROD". Operation: `/auth/login`, then `situation.read`.
 - Expect the portfolio: `portfolio.list`, the `bahtraku` group with `Perjanjian-Baru-Pendau`, "Bible · Scripture Burrito · Pendau · 27 of 27 books · New Testament", health "Warning" as text (H4). Point out "Show all projects, including unsupported ones" and that a Resource Container project is listed with its reason and cannot be released (#21).
 
 ### 2. Promote the rehearsal's pre-release (S7, R8)

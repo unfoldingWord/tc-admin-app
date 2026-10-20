@@ -97,8 +97,8 @@ Never commit a value from `.env`, and never paste one into a log, a test, or a c
 
 | | QA | Production |
 | --- | --- | --- |
-| Worker | `tc-admin-qa` | `tc-admin` (not created yet, #9) |
-| Address | <https://tc-admin-qa.unfoldingword.workers.dev> | `https://tc-admin.unfoldingword.workers.dev`, later a custom domain (#53) |
+| Worker | `tc-admin-qa` | `tc-admin` |
+| Address | <https://tc-admin-qa.unfoldingword.workers.dev> | <https://admin.translationcore.com> (the custom domain, since 20 October 2026, #53, E86); `https://tc-admin.unfoldingword.workers.dev` still answers |
 | Door43 | `https://qa.door43.org` | `https://git.door43.org` |
 | Deploys from | the head of `main` | the protected `production` branch, moved only by a pull request from `main` that Rich reviews |
 

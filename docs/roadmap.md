@@ -54,7 +54,7 @@ Recorded in [CONTEXT.md](../CONTEXT.md) and the [ADRs](adr). The ones that shape
 
 ### What is deliberately not in Milestone 1
 
-The metadata editor, Setup-incomplete recovery beyond a retry link, accessibility audit, custom domain.
+The metadata editor, Setup-incomplete recovery beyond a retry link, accessibility audit, custom domain (one arrived anyway on 20 October 2026, outside the milestone's work: `https://admin.translationcore.com`, #53, E86).
 
 ### Epics
 
