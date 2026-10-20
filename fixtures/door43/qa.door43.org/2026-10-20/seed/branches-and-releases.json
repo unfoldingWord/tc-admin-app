@@ -1,0 +1,82 @@
+{
+ "tc-admin-qa-org/id_seedtb": {
+  "default_branch": "main",
+  "catalog": {
+   "prod": {
+    "branch_or_tag_name": "v1.0.0",
+    "commit_sha": "91fc95d18da0a7d54cccd9ec248c85a9c4f29f60"
+   },
+   "preprod": {
+    "branch_or_tag_name": "v1.1.0",
+    "commit_sha": "83a37aca4f0c1c8065742ead16f3fc2739fe8043"
+   },
+   "latest": {
+    "branch_or_tag_name": "main",
+    "commit_sha": "963fce2aebae6d13a00ee0023930985a85b2e98d"
+   }
+  },
+  "branches": [
+   {
+    "name": "main",
+    "commit": "963fce2aebae6d13a00ee0023930985a85b2e98d"
+   }
+  ],
+  "releases": [
+   {
+    "tag_name": "v1.1.0",
+    "prerelease": true,
+    "target_commitish": "83a37aca4f0c1c8065742ead16f3fc2739fe8043"
+   },
+   {
+    "tag_name": "v1.0.0",
+    "prerelease": false,
+    "target_commitish": "91fc95d18da0a7d54cccd9ec248c85a9c4f29f60"
+   }
+  ],
+  "health_on_main": "success"
+ },
+ "tc-admin-qa-org/en_seedobs": {
+  "default_branch": "main",
+  "catalog": {
+   "prod": {
+    "branch_or_tag_name": "v1.0.0",
+    "commit_sha": "46d505ee98f848998b81b696c5af96bb689b839d"
+   },
+   "latest": {
+    "branch_or_tag_name": "main",
+    "commit_sha": "95fed3765fcc72edfd720224d8377b428e40e73e"
+   }
+  },
+  "branches": [
+   {
+    "name": "main",
+    "commit": "95fed3765fcc72edfd720224d8377b428e40e73e"
+   }
+  ],
+  "releases": [
+   {
+    "tag_name": "v1.0.0",
+    "prerelease": false,
+    "target_commitish": "46d505ee98f848998b81b696c5af96bb689b839d"
+   }
+  ],
+  "health_on_main": "success"
+ },
+ "tc-admin-qa/id_seedhf": {
+  "default_branch": "main",
+  "catalog": {
+   "latest": {
+    "branch_or_tag_name": "main",
+    "commit_sha": "b9a2b1d182f58f39e79ee7613d9194afd416a1a2"
+   }
+  },
+  "branches": [
+   {
+    "name": "main",
+    "commit": "b9a2b1d182f58f39e79ee7613d9194afd416a1a2"
+   }
+  ],
+  "releases": [],
+  "health_on_main": "info"
+ }
+}
