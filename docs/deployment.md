@@ -24,9 +24,9 @@ Cloudflare's **Workers Builds** connects a Worker to a GitHub repository. On eve
 
 - **Pull request opened or updated** → the `tc-admin-qa` Worker runs a **preview build** (`npx wrangler preview --env qa`), which creates a Preview at a URL that is stable for that branch and posts it on the pull request. Previews do not touch the live QA deployment.
 - **Merge to `main`** → the `tc-admin-qa` Worker runs its deploy command (`npx wrangler deploy --env qa`). QA is always the head of `main`.
-- **Merge to `production`** → the `tc-admin` Worker runs `npx wrangler deploy --env production`. The `production` branch is protected: only a pull request from `main`, reviewed by Rich, can move it. That review is the production approval.
+- **Merge to `production`** → the `tc-admin` Worker runs `npx wrangler deploy --env production`, and the `release` workflow (`.github/workflows/release.yml`) tags the commit `v<version>` from `package.json` and publishes the GitHub release with generated notes. The `production` branch is protected: only a release pull request from `main`, approved by Rich, or a hotfix pull request from a `hotfix/<name>` branch made from `production`, can move it (ADR 0015, §4).
 
-GitHub Actions (`.github/workflows/check.yml`) keeps running the tests and the document check on every pull request and stays the merge gate. Cloudflare only builds and deploys.
+GitHub Actions (`.github/workflows/check.yml`) keeps running the tests and the document check on every pull request and on pushes to `main` and `production`, and stays the merge gate. Cloudflare only builds and deploys.
 
 Two consequences to know about:
 
@@ -76,12 +76,35 @@ Nothing here can happen before #7 merges a Wrangler configuration and a minimal 
 
 Never paste a secret into a chat with an agent. If a value must reach an agent session, it goes into the session environment's configuration as an environment variable.
 
-## 4. Who does what
+## 4. Branches, releases, hotfixes, and rollback (ADR 0015)
 
-- The agent commits, pushes, opens pull requests, and, when asked, merges pull requests whose checks are green. Merging to `main` deploys QA; nobody deploys QA by hand.
-- A production release is a pull request from `main` to `production`. Rich reviews and merges it; Cloudflare deploys.
+Two long-lived branches, no `develop`. `main` is the trunk: every branch starts from it, every pull request targets it, the bench reviews it, a merge deploys QA. `production` is what is live and moves only by a release or a hotfix. Both are protected on GitHub: a pull request is required, and neither can be deleted or force-pushed. The version lives in the root `package.json` (semantic, `0.x` until the pilot ends) and is the one the Worker writes as `softwareVersion`.
+
+**A release**, when `main` holds what should go live:
+
+1. On `main`, an ordinary pull request "Prepare v0.2.0" bumps `version` in `package.json`. The bench reviews it like any other; it may carry the release's document updates.
+2. A pull request from `main` to `production`, titled "Release v0.2.0", with the generated notes or a summary in its body. It carries no commits of its own. Rich's approval is the production gate; the bench does not review it, having reviewed every piece.
+3. Rich merges it **with a merge commit** (never squash or rebase), so `production` keeps `main`'s history and the next release pull request is clean.
+4. On the push, Builds deploys `tc-admin`, and the `release` workflow creates the tag `v0.2.0` at the merge commit and publishes the GitHub release, its notes grouped by label (`.github/release.yml`: `enhancement` under Features, `bug` under Fixes, `documentation` under Documents). If the tag already exists, the workflow does nothing, so a push that does not bump the version makes no release.
+5. Verify as in section 3 step 3: `/api/situation` configured for Production at `https://admin.translationcore.com`, the page's bundle, `npx wrangler deployments list --env production`.
+
+**A hotfix**, when production needs a change that `main` cannot wait for or must not carry:
+
+1. Branch `hotfix/<name>` from `production`. Make the fix and bump the third number of `version` (`0.2.0` → `0.2.1`), with a test if the fix crossed an invariant.
+2. A pull request to `production`, labeled `bug`. The bench reviews it; Rich merges it with a merge commit. Builds deploys, the workflow tags `v0.2.1` and publishes the release.
+3. The same day, a pull request from `production` to `main`, "Back-merge v0.2.1", so `main` has the fix and the version. It merges cleanly: `production` holds nothing that did not come from `main` except hotfixes. Never leave `main` behind `production`.
+
+**A rollback**, when a deploy must come off now:
+
+1. `npx wrangler rollback --env production` (Rich, logged in; or Workers & Pages → `tc-admin` → Deployments → the previous version → Rollback) puts the previous version live in seconds, secrets untouched.
+2. Then make the branch match: a revert pull request on `production` (the merge commit reverted), merged like a hotfix, with the version bumped, and back-merged to `main`. Production is never left running a version its branch does not describe.
+
+**Who does what**
+
+- The agent branches from `main` (from `production` only for a hotfix Rich asks for), commits, pushes, opens and labels pull requests, and, when asked, merges pull requests to `main` whose checks are green. Merging to `main` deploys QA; until Workers Builds is connected (#9), the agent deploys QA by hand from `main` after a merge, as section 3 step 3 records.
+- Rich approves and merges every pull request to `production`: releases and hotfixes. Cloudflare deploys; the workflow tags and publishes.
 - Rich merges anything that changes an ADR or an invariant, unless he says otherwise.
-- Wrangler runs locally only for step 3 and for `wrangler dev`.
+- Wrangler runs locally only for section 3 step 3, for `wrangler dev`, and for a rollback.
 
 ## 5. Local development
 

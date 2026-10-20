@@ -1,6 +1,6 @@
 ## What changes
 
-<!-- One paragraph. Closes #. -->
+<!-- One paragraph. Closes #. Label the pull request `enhancement`, `bug`, or `documentation`: the release notes group by label (ADR 0015). -->
 
 ## Invariants
 

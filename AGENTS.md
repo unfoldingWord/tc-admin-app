@@ -87,7 +87,7 @@ Every pull request is reviewed by the unfoldingWord review bench (`uwreview`), w
 ## Conventions
 
 - Commits: imperative subject under 70 characters, a body that says why. One concern per commit.
-- Branches: `claude/<name>` for agent sessions; a pull request per issue or per coherent document change.
+- Branches: `claude/<name>` from `main` for agent sessions; a pull request per issue or per coherent document change, labeled `enhancement`, `bug`, or `documentation`. A hotfix branches from `production` as `hotfix/<name>` and its pull request targets `production`; a release is a pull request from `main` to `production` that Rich approves; nothing else moves `production` (ADR 0015, docs/deployment.md §4).
 - Copy: sentence case, verbs with objects on buttons, middle-dot separators, no emoji (the translationCore 4 design system rules, #8). "unfoldingWord" is always camelCase.
 - Code: TypeScript strict in `web/`, `worker/`, and `shared/`; no `any` (lint refuses it); the shared schema (`@tc-admin/shared/schema`) is the only source of API types. Add a dependency only for a concrete need of this application; the Worker's router is Hono (Q27).
 - Errors: only codes from the operation catalog's error catalog; the message text the specification fixes is quoted, not paraphrased.
