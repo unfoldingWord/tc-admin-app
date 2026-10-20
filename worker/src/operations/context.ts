@@ -24,6 +24,8 @@ export interface OperationContext {
   door43: Door43Client | null;
   plans: PlanStore;
   application: { name: string; version: string };
+  /** The commit the deployed build recorded, `null` when none (http/build-info.ts). */
+  build: { commit: string | null };
   requestId: string;
   now: () => Date;
 }
@@ -31,6 +33,8 @@ export interface OperationContext {
 export interface DeploymentConfig {
   door43Origin: string;
   door43ClientId?: string | undefined;
+  /** The commit the build recorded; absent or `null` when unknown. */
+  buildCommit?: string | null | undefined;
 }
 
 /**
@@ -46,6 +50,7 @@ export function operationContext(config: DeploymentConfig, requestId: string, to
     door43: token ? { host, token } : null,
     plans: planStore(plans),
     application: APPLICATION,
+    build: { commit: config.buildCommit ?? null },
     requestId,
     now: () => new Date(),
   };

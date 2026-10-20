@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Env, KVNamespace } from '../../src/env';
 import worker from '../../src/index';
 import { HANDLERS } from '../../src/operations';
+import pkg from '../../../package.json' with { type: 'json' };
+import { forgetBuildInfo } from '../../src/http/build-info';
 
 const kv: KVNamespace = { get: async () => null, put: async () => {}, delete: async () => {}, list: async () => ({ keys: [], list_complete: true }) };
 const env = (extra: Partial<Env> = {}): Env => ({
@@ -16,7 +18,10 @@ const env = (extra: Partial<Env> = {}): Env => ({
 });
 const call = (path: string, init: RequestInit = {}, extra: Partial<Env> = {}) => worker.fetch(new Request(`https://tc-admin.test${path}`, init), env(extra));
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  forgetBuildInfo();
+});
 
 describe('situation.read', () => {
   test('reports the configured host and that no one is signed in', async () => {
@@ -28,7 +33,22 @@ describe('situation.read', () => {
       host: { origin: 'https://qa.door43.org', name: 'QA', development: true },
       portfolio: null,
       configured: false,
+      application: { name: 'tC Admin', version: pkg.version, commit: null },
     });
+  });
+
+  test('reports the commit the build recorded, read once from build-info.json beside the page', async () => {
+    const assets = { fetch: vi.fn<(request: Request) => Promise<Response>>(async request => new URL(request.url).pathname === '/build-info.json' ? Response.json({ commit: 'abc1234def5678901234567890abcdef12345678' }) : new Response('<!doctype html>', { headers: { 'content-type': 'text/html' } })) };
+    const first = await (await call('/api/situation', {}, { ASSETS: assets })).json();
+    const second = await (await call('/api/situation', {}, { ASSETS: assets })).json();
+    expect(first).toMatchObject({ application: { commit: 'abc1234def5678901234567890abcdef12345678' } });
+    expect(second).toMatchObject({ application: { commit: 'abc1234def5678901234567890abcdef12345678' } });
+    expect(assets.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  test('reports no commit when the single-page fallback answers for build-info.json', async () => {
+    const body = await (await call('/api/situation')).json();
+    expect(body).toMatchObject({ application: { commit: null } });
   });
 
   test('says sign-in is configured when a client id is set, and names production', async () => {

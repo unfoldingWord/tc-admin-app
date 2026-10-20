@@ -131,6 +131,8 @@ header .account button { min-height: var(--control-h-sm); padding: 0 14px; backg
 header .account button:hover { background: var(--fill-inverse-hover); }
 /* 960px: an admin tool's lists and tables use the width (#151); the design system's page measure is 980px. */
 main { max-width: 960px; margin: 40px auto 64px; padding: 0 16px; }
+/* What this deployment runs: name, version, built commit, host (deployment.md §4). */
+footer { max-width: 960px; margin: 0 auto 24px; padding: 0 16px; font-size: var(--fs-ui-sm, 12px); color: var(--text-muted, inherit); }
 
 /* Buttons (the design system's pill action, control.css and states.css): one height for every control in a row,
    a darker fill on hover, a quiet tint for the outlined kind. No scale on press: "composed, never playful". The

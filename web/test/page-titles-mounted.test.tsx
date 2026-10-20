@@ -44,13 +44,13 @@ const topHeadings = () => screen.getAllByRole('heading', { level: 1 }).map(headi
 describe('#154: each page names itself', () => {
   test('#154: signed out, the one top heading is "Your projects"', async () => {
     render(<App />);
-    await answerWhenSent('GET', '/api/situation', { account: null, host, portfolio: null, configured: true });
+    await answerWhenSent('GET', '/api/situation', { account: null, host, portfolio: null, configured: true, application: { name: 'tC Admin', version: '0.1.0', commit: null } });
     expect(topHeadings()).toEqual(['Your projects']);
   });
 
   test('#154: the portfolio\'s one top heading is "Your projects"; a project\'s page has only its own title', async () => {
     render(<App />);
-    await answerWhenSent('GET', '/api/situation', { account, host, portfolio: null, configured: true });
+    await answerWhenSent('GET', '/api/situation', { account, host, portfolio: null, configured: true, application: { name: 'tC Admin', version: '0.1.0', commit: null } });
     await answerWhenSent('GET', '/api/portfolio?show=supported', { organizations: [{ name: 'bahtraku', projects: [PENDAU] }], freshness, analysis: { complete: 1, pending: 0 } });
     expect(topHeadings()).toEqual(['Your projects']);
 
@@ -61,7 +61,7 @@ describe('#154: each page names itself', () => {
 
   test('#154: creating a project, the release stepper, and a release by its tag each have their own one top heading', async () => {
     render(<App />);
-    await answerWhenSent('GET', '/api/situation', { account, host, portfolio: null, configured: true });
+    await answerWhenSent('GET', '/api/situation', { account, host, portfolio: null, configured: true, application: { name: 'tC Admin', version: '0.1.0', commit: null } });
     await answerWhenSent('GET', '/api/portfolio?show=supported', { organizations: [{ name: 'bahtraku', projects: [PENDAU] }], freshness, analysis: { complete: 1, pending: 0 } });
     for (const [hash, title] of [
       ['#/new', 'Create a project'],

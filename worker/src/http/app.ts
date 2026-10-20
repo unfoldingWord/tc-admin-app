@@ -21,6 +21,7 @@ import { checkIdempotencyKey } from './idempotency';
 import { readMultipartInput } from './multipart';
 import { auth, endSession, readSession, signInFailed } from './session';
 import type { ActiveSession } from './session';
+import { readBuildInfo } from './build-info';
 
 export type App = { Bindings: Env; Variables: { requestId: string; session: ActiveSession | null } };
 
@@ -72,8 +73,9 @@ function validationError(error: z.ZodError): CatalogError {
 }
 
 async function runOperation(c: Context<App>, name: RoutedOperation): Promise<Response> {
+  const { commit } = await readBuildInfo(c.env.ASSETS);
   const context: OperationContext = operationContext(
-    { door43Origin: c.env.DOOR43_ORIGIN, door43ClientId: c.env.DOOR43_CLIENT_ID },
+    { door43Origin: c.env.DOOR43_ORIGIN, door43ClientId: c.env.DOOR43_CLIENT_ID, buildCommit: commit },
     c.get('requestId'),
     c.get('session')?.record.token ?? null,
     c.env.PLANS,
