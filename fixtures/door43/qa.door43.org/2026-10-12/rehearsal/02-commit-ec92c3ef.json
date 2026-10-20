@@ -1,0 +1,16 @@
+{
+  "sha": "ec92c3efcb00948d07d67c08bea9ae43365625fe",
+  "parents": [
+    "2d9dbd1ee09b5a1c28edd8668462f6a64029619b"
+  ],
+  "message": "Release v1.2.1: snapshot\n\nPrepared by tC Admin 0.1.0 from master at 537e69a50c.\n",
+  "files": [
+    "ingredients/TIT.usfm",
+    "metadata.json"
+  ],
+  "stats": {
+    "total": 694,
+    "additions": 693,
+    "deletions": 1
+  }
+}

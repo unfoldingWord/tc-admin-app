@@ -1,0 +1,16 @@
+[
+  {
+    "name": "temp-tca-release/v1.2.1",
+    "commit": {
+      "id": "ec92c3efcb00948d07d67c08bea9ae43365625fe",
+      "message": "Release v1.2.1: snapshot\n\nPrepared by tC Admin 0.1.0 from master at 537e69a50c.\n"
+    }
+  },
+  {
+    "name": "master",
+    "commit": {
+      "id": "537e69a50c7d532b8401ed5bf961754782f0c65a",
+      "message": "Stand-in revision of PHM for the tC Admin demo rehearsal on QA (12 October 2026)\n"
+    }
+  }
+]

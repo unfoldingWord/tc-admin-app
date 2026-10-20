@@ -97,8 +97,8 @@ Never commit a value from `.env`, and never paste one into a log, a test, or a c
 
 | | QA | Production |
 | --- | --- | --- |
-| Worker | `tc-admin-qa` | `tc-admin` (not created yet, #9) |
-| Address | <https://tc-admin-qa.unfoldingword.workers.dev> | `https://tc-admin.unfoldingword.workers.dev`, later a custom domain (#53) |
+| Worker | `tc-admin-qa` | `tc-admin` |
+| Address | <https://tc-admin-qa.unfoldingword.workers.dev> | <https://admin.translationcore.com> (the custom domain, since 20 October 2026, #53, E86); `https://tc-admin.unfoldingword.workers.dev` still answers |
 | Door43 | `https://qa.door43.org` | `https://git.door43.org` |
 | Deploys from | the head of `main` | the protected `production` branch, moved only by a pull request from `main` that Rich reviews |
 
@@ -140,7 +140,7 @@ It builds three projects through the Worker's own operations:
 - `tc-admin-qa-org/en_seedobs`: Open Bible Stories with a full release.
 - `tc-admin-qa/id_seedhf`: a Bible that has never been released, so it has health findings.
 
-Running it twice is safe: it leaves alone any project that already exists. It needs a `TEST_TOKEN` issued by QA, since a token works only on the host that issued it (E23), and it refuses any other host. Whether the QA OAuth application survives a reset has not yet been confirmed (#4, Q9). If sign-in on QA fails after a reset, check that first.
+Running it twice is safe: it leaves alone any project that already exists. It needs a `TEST_TOKEN` that works on QA, and it refuses any other host. A reset keeps the QA OAuth application, the Worker's secrets, and `TEST_TOKEN`, which is issued on production so that each reset copies it to QA, so both sign-in and this script work after one (E82, E83, [docs/deployment.md](docs/deployment.md) §6).
 
 ## How we build it
 

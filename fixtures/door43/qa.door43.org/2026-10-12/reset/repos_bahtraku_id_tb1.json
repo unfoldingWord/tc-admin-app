@@ -1,0 +1,10 @@
+{
+  "full_name": "bahtraku/id_tb1",
+  "default_branch": "master",
+  "catalog": {
+    "prod": {
+      "branch_or_tag_name": "1974",
+      "commit_sha": "6ac2aeb0dbaf97f1d71278c8ac4e5d5dc170dd6f"
+    }
+  }
+}

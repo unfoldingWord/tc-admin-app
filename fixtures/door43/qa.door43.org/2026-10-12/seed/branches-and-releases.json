@@ -1,0 +1,85 @@
+{
+  "tc-admin-qa-org/id_seedtb": {
+    "default_branch": "main",
+    "catalog": {
+      "prod": {
+        "branch_or_tag_name": "v1.0.0",
+        "commit_sha": "a96371986d122ded82f833c11e7db4a47770f6c2"
+      },
+      "latest": {
+        "branch_or_tag_name": "main",
+        "commit_sha": "d0c1ab421fe5cd1e858dd2f4a31b00286ead510f"
+      },
+      "preprod": {
+        "branch_or_tag_name": "v1.1.0",
+        "commit_sha": "c63823bfe258a4df45c18431942d229d621629e2"
+      }
+    },
+    "branches": [
+      {
+        "name": "main",
+        "commit": "d0c1ab421fe5cd1e858dd2f4a31b00286ead510f"
+      }
+    ],
+    "releases": [
+      {
+        "tag_name": "v1.1.0",
+        "prerelease": true,
+        "target_commitish": "c63823bfe258a4df45c18431942d229d621629e2"
+      },
+      {
+        "tag_name": "v1.0.0",
+        "prerelease": false,
+        "target_commitish": "a96371986d122ded82f833c11e7db4a47770f6c2"
+      }
+    ],
+    "health_on_main": "success"
+  },
+  "tc-admin-qa-org/en_seedobs": {
+    "default_branch": "main",
+    "catalog": {
+      "prod": {
+        "branch_or_tag_name": "v1.0.0",
+        "commit_sha": "ae4dcb18e840716182c28301cd7ff35034675040"
+      },
+      "latest": {
+        "branch_or_tag_name": "main",
+        "commit_sha": "6c620b737692aa085105d546762a5f2ac3f891e9"
+      },
+      "preprod": null
+    },
+    "branches": [
+      {
+        "name": "main",
+        "commit": "6c620b737692aa085105d546762a5f2ac3f891e9"
+      }
+    ],
+    "releases": [
+      {
+        "tag_name": "v1.0.0",
+        "prerelease": false,
+        "target_commitish": "ae4dcb18e840716182c28301cd7ff35034675040"
+      }
+    ],
+    "health_on_main": "success"
+  },
+  "tc-admin-qa/id_seedhf": {
+    "default_branch": "main",
+    "catalog": {
+      "prod": null,
+      "latest": {
+        "branch_or_tag_name": "main",
+        "commit_sha": "8e338fdbb142afaacda79cadfc1ca3f3f9220de2"
+      },
+      "preprod": null
+    },
+    "branches": [
+      {
+        "name": "main",
+        "commit": "8e338fdbb142afaacda79cadfc1ca3f3f9220de2"
+      }
+    ],
+    "releases": [],
+    "health_on_main": "info"
+  }
+}

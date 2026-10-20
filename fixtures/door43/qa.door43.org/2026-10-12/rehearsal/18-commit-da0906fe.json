@@ -1,0 +1,17 @@
+{
+  "sha": "da0906fe366ecbe0c00250f054cae4d310e0d4f9",
+  "parents": [
+    "2d865cbc8329bbb19eb2eefe6508f753124697d4"
+  ],
+  "message": "Release v2.0.0: snapshot\n\nPrepared by tC Admin 0.1.0 from master at 537e69a50c.\n",
+  "files": [
+    {
+      "filename": "metadata.json",
+      "status": "modified"
+    },
+    {
+      "filename": "ingredients/3JN.usfm",
+      "status": "removed"
+    }
+  ]
+}

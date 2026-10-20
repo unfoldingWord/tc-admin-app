@@ -1,0 +1,20 @@
+[
+  {
+    "tag_name": "v1.2.2",
+    "prerelease": true,
+    "target_commitish": "2d865cbc8329bbb19eb2eefe6508f753124697d4",
+    "body": "## v1.2.2\n\nSource: bahtraku/Perjanjian-Baru-Pendau at 537e69a50c on master.\nPrevious release: v1.2.1.\n\n### Added\n- None\n\n### Revised\n- Philemon (PHM)\n\n### Removed\n- None\n\n### Carried forward\n26 books unchanged from v1.2.1: MAT, MRK, LUK, JHN, ACT, ROM, 1CO, 2CO, GAL, EPH, PHP, COL, 1TH, 2TH, 1TI, 2TI, TIT, HEB, JAS, 1PE, 2PE, 1JN, 2JN, 3JN, JUD, REV\n\n### Unknown files included\n- None\n\nEdited during the QA rehearsal of 12 October 2026."
+  },
+  {
+    "tag_name": "v1.2.1",
+    "prerelease": false,
+    "target_commitish": "ec92c3efcb00948d07d67c08bea9ae43365625fe",
+    "body": "## v1.2.1\n\nSource: bahtraku/Perjanjian-Baru-Pendau at 537e69a50c on master.\nPrevious release: v1.2.\n\n### Added\n- None\n\n### Revised\n- Titus (TIT)\n\n### Removed\n- None\n\n### Carried forward\n26 books unchanged from v1.2: MAT, MRK, LUK, JHN, ACT, ROM, 1CO, 2CO, GAL, EPH, PHP, COL, 1TH, 2TH, 1TI, 2TI, PHM, HEB, JAS, 1PE, 2PE, 1JN, 2JN, 3JN, JUD, REV\n\n### Unknown files included\n- None"
+  },
+  {
+    "tag_name": "v1.2",
+    "prerelease": false,
+    "target_commitish": "master",
+    "body": ""
+  }
+]
