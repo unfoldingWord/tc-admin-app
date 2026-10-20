@@ -78,7 +78,7 @@ Never paste a secret into a chat with an agent. If a value must reach an agent s
 
 ## 4. Branches, releases, hotfixes, and rollback (ADR 0015)
 
-Two long-lived branches, no `develop`. `main` is the trunk: every branch starts from it, every pull request targets it, the bench reviews it, a merge deploys QA. `production` is what is live and moves only by a release or a hotfix. Both are protected on GitHub: a pull request is required, and neither can be deleted or force-pushed. The version lives in the root `package.json` (semantic, `0.x` until the pilot ends) and is the one the Worker writes as `softwareVersion`.
+Two long-lived branches, no `develop`. `main` is the trunk: every branch but a hotfix starts from it, every pull request but a release or a hotfix targets it, the bench reviews it, a merge deploys QA. `production` is what is live and moves only by a release or a hotfix. Both are protected on GitHub: a pull request is required, and neither can be deleted or force-pushed. The version lives in the root `package.json` (semantic, `0.x` until the pilot ends) and is the one the Worker writes as `softwareVersion`.
 
 **A release**, when `main` holds what should go live:
 
@@ -88,7 +88,7 @@ Two long-lived branches, no `develop`. `main` is the trunk: every branch starts 
 4. On the push, Builds deploys `tc-admin`, and the `release` workflow creates the tag `v0.2.0` at the merge commit and publishes the GitHub release, its notes grouped by label (`.github/release.yml`: `enhancement` under Features, `bug` under Fixes, `documentation` under Documents). If the tag already exists, the workflow does nothing, so a push that does not bump the version makes no release.
 5. Verify as in section 3 step 3: `/api/situation` configured for Production at `https://admin.translationcore.com`, the page's bundle, `npx wrangler deployments list --env production`.
 
-**A hotfix**, when production needs a change that `main` cannot wait for or must not carry:
+**A hotfix**, when production needs a change that cannot wait for the next release, without the unreleased work on `main`:
 
 1. Branch `hotfix/<name>` from `production`. Make the fix and bump the third number of `version` (`0.2.0` → `0.2.1`), with a test if the fix crossed an invariant.
 2. A pull request to `production`, labeled `bug`. The bench reviews it; Rich merges it with a merge commit. Builds deploys, the workflow tags `v0.2.1` and publishes the release.
@@ -97,7 +97,7 @@ Two long-lived branches, no `develop`. `main` is the trunk: every branch starts 
 **A rollback**, when a deploy must come off now:
 
 1. `npx wrangler rollback --env production` (Rich, logged in; or Workers & Pages → `tc-admin` → Deployments → the previous version → Rollback) puts the previous version live in seconds, secrets untouched.
-2. Then make the branch match: a revert pull request on `production` (the merge commit reverted), merged like a hotfix, with the version bumped, and back-merged to `main`. Production is never left running a version its branch does not describe.
+2. Then make the branch match: a revert pull request on `production` (`git revert -m 1 <merge commit>` on a branch from `production`), merged like a hotfix, with the version bumped in the same pull request, and back-merged to `main`. Until it merges, `production` still names the bad commit: do not retry or re-run its Workers Builds deploy. Production is never left running a version its branch does not describe.
 
 **Who does what**
 
