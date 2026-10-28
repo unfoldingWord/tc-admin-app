@@ -95,11 +95,16 @@ const byCanonicalOrder = (type: ReleasableType) => {
   return (a: Candidate, b: Candidate) => (index.get(a.id) ?? Infinity) - (index.get(b.id) ?? Infinity) || a.id.localeCompare(b.id);
 };
 
-/** The group a unit falls in from what each ref has of it (domain model §4). */
+/**
+ * The group a unit falls in from what each ref has of it (domain model §4). A released book the default branch no
+ * longer has, its file deleted whether or not the branch's catalog still lists it, is `deleted_from_branch`: carried
+ * forward by default like every released book, never included, and a removal when left out (decided 28 October 2026
+ * by Rich, #190; it read as `unknown` with its file deleted, and as `unchanged` with its listing gone too).
+ */
 export function groupOf(onBranch: UnitFile | null, inBaseline: UnitFile | null): CandidateGroup {
-  if ((onBranch && onBranch.sha === null) || (inBaseline && inBaseline.sha === null)) return 'unknown';
-  if (!inBaseline) return 'new';
-  if (!onBranch) return 'unchanged';
+  if (!inBaseline) return onBranch?.sha === null ? 'unknown' : 'new';
+  if (inBaseline.sha === null) return 'unknown';
+  if (!onBranch || onBranch.sha === null) return 'deleted_from_branch';
   return onBranch.sha === inBaseline.sha ? 'unchanged' : 'changed_released';
 }
 

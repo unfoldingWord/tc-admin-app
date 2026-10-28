@@ -38,13 +38,15 @@ describe('units of a ref', () => {
 describe('groups and defaults', () => {
   const on = (sha: string | null) => ({ id: 'mat', path: 'ingredients/MAT.usfm', title: '', sha, size: null });
 
-  test('the group follows the SHAs: new, unchanged, changed released, and unknown when a file is missing', () => {
+  test('the group follows the SHAs: new, unchanged, changed released; a released book the branch no longer has is deleted from it (#190); unknown when the release\'s file or a new book\'s file is missing', () => {
     expect(groupOf(on('a'), null)).toBe('new');
     expect(groupOf(on('a'), on('a'))).toBe('unchanged');
     expect(groupOf(on('a'), on('b'))).toBe('changed_released');
-    expect(groupOf(null, on('b'))).toBe('unchanged');
-    expect(groupOf(on(null), on('b'))).toBe('unknown');
+    // Its file deleted, with the branch's catalog no longer listing it, or still listing it (Rich's test on QA, 28 October 2026).
+    expect(groupOf(null, on('b'))).toBe('deleted_from_branch');
+    expect(groupOf(on(null), on('b'))).toBe('deleted_from_branch');
     expect(groupOf(on('a'), on(null))).toBe('unknown');
+    expect(groupOf(on(null), null)).toBe('unknown');
   });
 
   test('R4: a first release includes every book; a later one carries every released book forward, changed or not, and leaves every new one out', () => {
@@ -68,7 +70,7 @@ describe('a release of a Bible', () => {
   test('groups every book on either ref and starts them as R4 says, in canonical order', () => {
     const { books } = detectCandidates('bible', branch, baseline);
     expect(books.map(book => [book.id, book.group, book.selection])).toEqual([
-      ['rut', 'unchanged', 'carry_forward'],
+      ['rut', 'deleted_from_branch', 'carry_forward'],
       ['jon', 'new', 'leave_out'],
       ['mat', 'changed_released', 'carry_forward'],
       ['mrk', 'unchanged', 'carry_forward'],
@@ -109,7 +111,7 @@ describe('a release of Open Bible Stories', () => {
     const candidates = detectCandidates('obs', branch, baseline);
     expect(candidates.books.map(book => [book.id, book.group, book.selection])).toEqual([
       ['01', 'unchanged', 'include'],
-      ['02', 'unchanged', 'leave_out'],
+      ['02', 'deleted_from_branch', 'leave_out'],
       ['03', 'new', 'include'],
     ]);
     expect(candidates.removals).toEqual(['02']);

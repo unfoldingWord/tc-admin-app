@@ -32,6 +32,9 @@ describe('the selection (product spec §10)', () => {
   test('R4: a choice that does not apply says why: only a book in the last release can be carried forward (#191)', () => {
     expect(unavailableReason({ group: 'new' }, 'carry_forward')).toBe('not in the last release');
     expect(unavailableReason({ group: 'unknown' }, 'carry_forward')).toBe('not a book the last release is known to have');
+    // A released book deleted from the default branch: kept or left out, never included (#190).
+    expect(statesFor({ group: 'deleted_from_branch' })).toEqual(['carry_forward', 'leave_out']);
+    expect(unavailableReason({ group: 'deleted_from_branch' }, 'include')).toBe('not on the default branch');
     for (const state of ['include', 'leave_out'] as const) expect(unavailableReason({ group: 'new' }, state)).toBeNull();
     for (const state of ['include', 'carry_forward', 'leave_out'] as const) expect(unavailableReason({ group: 'unchanged' }, state)).toBeNull();
   });
@@ -51,6 +54,8 @@ describe('the selection (product spec §10)', () => {
     expect(removalsOf(books, selectionOf(plan))).toEqual([]);
     expect(removalsOf(books, { ...selectionOf(plan), jhn: 'leave_out' })).toEqual(['jhn']);
     expect(removalsOf(books, { mat: 'leave_out', mrk: 'leave_out', jhn: 'leave_out' })).toEqual(['mat', 'jhn']);
+    // A released book deleted from the default branch, left out, is a removal too (#190).
+    expect(removalsOf([{ id: 'jud', group: 'deleted_from_branch', selection: 'carry_forward' }], { jud: 'leave_out' })).toEqual(['jud']);
   });
 
   test('R4: a release needs at least one book included or carried forward', () => {

@@ -80,6 +80,10 @@ _Avoid_: Release branch (for the permanent history), master
 A book copied from the latest full release without incorporating newer changes from the default branch: the dash state of the release selection. A released book is carried forward in every later release unless the manager leaves it out.
 _Avoid_: Unchanged content, old content
 
+**Deleted from the default branch**:
+A released book whose file the default branch no longer has, whether or not the branch's metadata still lists it (candidate group `deleted_from_branch`). Release preparation lists it with the new and changed books, starting as carried forward so the release keeps it; left out, it becomes removed content. It cannot be included: there is no file to include (decided 28 October 2026 by Rich, #190).
+_Avoid_: Unknown (for this case), unchanged (for this case)
+
 **Removed content**:
 A book that was in the latest full release and that the manager left out of a new release. It is absent from that release's files and metadata; earlier releases keep it. Removal is explicit: the plan lists it and the release notes name it (ADR 0013).
 _Avoid_: Deleted book, unpublished book (in user-facing copy)
@@ -199,7 +203,7 @@ The identifier is the only spelling used in code, API payloads, tests, logs, and
 | Health state | `health.state` | `healthy`, `info`, `warning`, `failing`, `never_checked`, `checking`, `door43_unavailable`, `health_error`, `unsupported` |
 | Content inclusion state | inclusion | `unreleased`, `released`, `changed_released`, `selected`, `carried_forward`, `excluded`, `removed`, `administrative`, `unknown` |
 | Selection state | `selection` | `include`, `carry_forward`, `leave_out` |
-| Candidate group | group | `new`, `changed_released`, `unchanged`, `unknown` |
+| Candidate group | group | `new`, `changed_released`, `unchanged`, `deleted_from_branch`, `unknown` |
 | Release preparation state | `preparation.state` | `selecting`, `snapshot_prepared`, `health_checking`, `health_blocked`, `ready_for_release`, `pre_release`, `full_release`, `restart_required`, `retryable_failure`, `discarded` |
 | Version rule | `version.rule_applied` | `first`, `removal`, `new_books`, `revisions` |
 | Setup state | `setup.state` | `complete`, `incomplete` |
