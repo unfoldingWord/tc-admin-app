@@ -221,7 +221,7 @@ describe('what a plan refuses', () => {
     existing.add('tc-admin-qa-org/id_tcap');
     const error = (await failure(projectCreatePlan(parsed(), context())))!;
     expect(error.code).toBe('name_taken');
-    expect(error.message).toBe('A repository named id_tcap already exists in tc-admin-qa-org. Change the abbreviation.');
+    expect(error.message).toBe('A repository named id_tcap already exists in tc-admin-qa-org.');
     expect(kv.entries.size).toBe(0);
   });
 

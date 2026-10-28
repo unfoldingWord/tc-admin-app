@@ -109,7 +109,7 @@ The metadata editor, Setup-incomplete recovery beyond a retry link, accessibilit
 
 **EPIC: Open Bible Stories** ([#48](https://github.com/unfoldingWord-box3/tc-admin-app/issues/48))
 - Story detection from `ingredients/content/<NN>.md`, 50-story coverage, creation with the `gloss/textStories` flavor, upload and import of stories, release of the whole default branch.
-- A decision, Birch's with Rich, on whether a new Open Bible Stories project starts with its 50 stories as empty files, which translationCore 4 expects ([#194](https://github.com/unfoldingWord/tc-admin-app/issues/194), added 27 October 2026 by Rich, from the review of the QA site with Birch).
+- A decision, Birch's with Rich, on whether a new Open Bible Stories project starts with its 50 stories as empty files, which translationCore 4 expects ([#194](https://github.com/unfoldingWord/tc-admin-app/issues/194), added 27 October 2026 by Rich, from the review of the QA site with Birch). Decided 28 October 2026 by Rich: no story or book files, since Birch had said in the review that translationCore 4 creates them; closed with nothing built (product-spec.md §6).
 
 **EPIC: Selective release** ([#41](https://github.com/unfoldingWord-box3/tc-admin-app/issues/41))
 - Built as the operations `release.plan`, `release.prepare`, `preparation.read`, `release.create`, `release.lookup`, `release.promote`, and `preparation.discard` ([#58](https://github.com/unfoldingWord-box3/tc-admin-app/issues/58)); the preparation is an addressable resource that survives a lost session.

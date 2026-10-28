@@ -369,7 +369,7 @@ describe('a repository the plan could not learn it created (Q29)', () => {
       change(repositories.get('tc-admin-qa-org/id_tcap')!);
       const error = (await failure(retry(planned.id)))!;
       expect(error.code).toBe('name_taken');
-      expect(error.message).toBe('A repository named id_tcap already exists in tc-admin-qa-org. Change the abbreviation.');
+      expect(error.message).toBe('A repository named id_tcap already exists in tc-admin-qa-org.');
       expect(writesSent()).toEqual([]);
     }
   });

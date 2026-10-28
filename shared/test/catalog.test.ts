@@ -137,7 +137,7 @@ describe('the error catalog (operations.md §6)', () => {
 
   test('a message fills its placeholders and keeps one that has no value', () => {
     expect(catalogMessage('name_taken', undefined, { repo_name: 'en_ult', owner: 'unfoldingWord' })).toBe(
-      'A repository named en_ult already exists in unfoldingWord. Change the abbreviation.',
+      'A repository named en_ult already exists in unfoldingWord.',
     );
     expect(catalogMessage('invalid_version', 'removal', { major: 'v2.0.0' })).toBe('Removing a book needs a new major version, at least v2.0.0.');
     expect(formatMessage('Commit failed: <error message>.')).toBe('Commit failed: <error message>.');

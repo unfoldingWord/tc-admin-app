@@ -30,6 +30,8 @@ import {
   tagRefused,
   withCreated,
   withProjectType,
+  abbreviationOf,
+  TITLE_FIELD,
 } from '../src/create-project';
 import type { Form, Language, Owner } from '../src/create-project';
 import { hashRef } from '../src/portfolio-labels';
@@ -74,12 +76,22 @@ describe('the form', () => {
     });
   });
 
-  test('Open Bible Stories defaults the abbreviation to OBS and has no testament scope; a written abbreviation is kept (#82, Q25)', () => {
+  test('Open Bible Stories is always abbreviated OBS and has no testament scope; back to a Bible, OBS is cleared (#192, amending #82; Q25)', () => {
     const obs = withProjectType(filled({ abbreviation: '' }), 'obs');
     expect(obs).toMatchObject({ project_type: 'obs', abbreviation: 'OBS', testament_scope: null });
     expect(withProjectType(obs, 'bible')).toMatchObject({ project_type: 'bible', abbreviation: '', testament_scope: null });
-    expect(withProjectType(filled({ abbreviation: 'TCAP' }), 'obs')).toMatchObject({ abbreviation: 'TCAP', testament_scope: null });
+    expect(withProjectType(filled({ abbreviation: 'TCAP' }), 'obs')).toMatchObject({ abbreviation: 'OBS', testament_scope: null });
     expect(withProjectType(withProjectType(filled({ abbreviation: 'obs ' }), 'obs'), 'bible').abbreviation).toBe('');
+    // A draft resumed from before #192 may hold another abbreviation: the form still sends OBS and names the repository <language>_obs.
+    const resumed = { ...filled({ abbreviation: 'TCAP' }), project_type: 'obs' as const, testament_scope: null };
+    expect(abbreviationOf(resumed)).toBe('OBS');
+    expect(repositoryNameOf(resumed)).toBe('id_obs');
+    expect(abbreviationOf(filled({ abbreviation: ' ULT ' }))).toBe('ULT');
+  });
+
+  test('the title field is named by project type, with help that says what title is wanted (#192)', () => {
+    expect(TITLE_FIELD.bible).toEqual({ label: 'Bible title', help: 'The name of this Bible in the target language.' });
+    expect(TITLE_FIELD.obs).toEqual({ label: 'Story collection title', help: 'What Open Bible Stories is called in the target language. It need not be a word-for-word translation.' });
   });
 
   test('shows the repository name the Worker will derive, <language>_<abbreviation> in lowercase, once both are given', () => {
@@ -128,7 +140,7 @@ describe('the form', () => {
       license: 'cc-by-sa-4.0',
     });
     const obs = withProjectType(filled({ details: { projectType: 'daughter', translationType: 'revision', audience: 'literary' } }), 'obs');
-    expect(planInput({ ...obs, language: pendau })).toMatchObject({ project_type: 'obs', abbreviation: 'TCAP', testament_scope: null, flavor: null, language: { code: 'ums' } });
+    expect(planInput({ ...obs, language: pendau })).toMatchObject({ project_type: 'obs', abbreviation: 'OBS', testament_scope: null, flavor: null, language: { code: 'ums' } });
   });
 });
 
@@ -151,9 +163,11 @@ describe('where a failure is shown (X2)', () => {
     expect(fieldErrors(error({ details: { fields: [{ path: 'abbreviation' }] }, message: 'abbreviation: bad' }))).toEqual({ abbreviation: 'abbreviation: bad' });
   });
 
-  test('name_taken is answered at the abbreviation and permission_denied at the owner, with the catalog message; the rest is not a field\'s', () => {
-    const taken = 'A repository named id_tcap already exists in tc-admin-qa-org. Change the abbreviation.';
-    expect(fieldErrors(error({ code: 'name_taken', message: taken }))).toEqual({ abbreviation: taken });
+  test('name_taken is answered at a Bible\'s abbreviation, and at the owner for Open Bible Stories, whose abbreviation is fixed (#192); permission_denied at the owner; the rest is not a field\'s', () => {
+    const taken = 'A repository named id_tcap already exists in tc-admin-qa-org.';
+    expect(fieldErrors(error({ code: 'name_taken', message: taken }))).toEqual({ abbreviation: `${taken} Change the abbreviation, or choose another owner.` });
+    const obsTaken = 'A repository named id_obs already exists in tc-admin-qa-org.';
+    expect(fieldErrors(error({ code: 'name_taken', message: obsTaken }), 'obs')).toEqual({ owner: `${obsTaken} Every Open Bible Stories project is named <language>_obs, so choose another owner.` });
     expect(fieldErrors(error({ code: 'permission_denied', message: ERROR_CATALOG.permission_denied.message }))).toEqual({ owner: ERROR_CATALOG.permission_denied.message });
     expect(fieldErrors(error({ code: 'door43_unavailable', message: ERROR_CATALOG.door43_unavailable.message }))).toBeNull();
     expect(fieldErrors(error({ code: 'plan_expired', message: ERROR_CATALOG.plan_expired.message }))).toBeNull();
@@ -318,7 +332,7 @@ describe('a setup that is incomplete (#31)', () => {
   });
 
   test('Q29: a taken name after an apply of the same plan whose outcome is unknown offers the retry; otherwise it is the abbreviation\'s, as before', () => {
-    const taken = error({ code: 'name_taken', message: 'A repository named id_tcap already exists in tc-admin-qa-org. Change the abbreviation.' });
+    const taken = error({ code: 'name_taken', message: 'A repository named id_tcap already exists in tc-admin-qa-org.' });
     expect(applyFailure(taken, true)).toBe('reconcile');
     expect(applyFailure(taken, false)).toBe('field');
     expect(applyFailure(error({ code: 'door43_unavailable' }), true)).toBe('problem');

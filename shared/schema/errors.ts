@@ -28,7 +28,7 @@ export const ERROR_CATALOG = {
   csrf_rejected: { http: 403, retryable: false, message: 'This request could not be verified. Reload and try again.', next_action: 'reload', invariants: ['A4'] },
   not_found: { http: 404, retryable: false, message: 'This project or release was not found on Door43.', next_action: 'refresh the portfolio', invariants: [] },
   validation_failed: { http: 400, retryable: false, message: null, next_action: 'fix the input', invariants: [] },
-  name_taken: { http: 409, retryable: false, message: 'A repository named <repo_name> already exists in <owner>. Change the abbreviation.', next_action: 'change the abbreviation or the owner', invariants: [] },
+  name_taken: { http: 409, retryable: false, message: 'A repository named <repo_name> already exists in <owner>.', next_action: 'change the abbreviation or the owner', invariants: [] },
   not_editable: { http: 409, retryable: false, message: null, next_action: 'import into a new project when the reason offers it', invariants: ['W2', 'P1'] },
   not_releasable: { http: 409, retryable: false, message: null, next_action: 'import into a new project when the reason offers it', invariants: ['P1'] },
   invalid_selection: { http: 400, retryable: false, message: 'Include or carry forward at least one book.', next_action: 'fix the selection', invariants: ['R4'] },

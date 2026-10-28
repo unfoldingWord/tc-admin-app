@@ -82,16 +82,18 @@ The manager provides:
 
 - Owner: their own account, or one of their organizations where Door43 permits repository creation for this account; no other owner is offered (decided 6 October 2026, E43)
 - Project type (Bible or Open Bible Stories), stored as the Scripture Burrito flavor
-- Project title, the name of the Bible or story collection
-- Abbreviation, such as ULT, required
-- Target language
+- Target language, right after the project type, so the repository name is complete from the start (#192)
+- Title, named by project type (#192): "Bible title", the name of this Bible in the target language; "Story collection title", what Open Bible Stories is called in the target language, which need not be a word-for-word translation
+- Abbreviation, such as ULT, required, for a Bible only. An Open Bible Stories project is always abbreviated OBS, and the wizard offers no field for it (decided 27 October 2026 by Rich and Birch, #192, amending #82, which let the manager change it), so abbreviations stay standard and a repository's name says what it holds. The wizard enforces it; `project.create.plan` still accepts another abbreviation, for the seed script and the probes (Rich, 28 October 2026)
 - Testament scope for Bible projects, which sets the metadata's `currentScope` and the coverage target
 - Translation details for Bible projects: the kind of project, the translation type, and the audience the Scripture Burrito `textTranslation` flavor requires, shown with the defaults preselected (decided 5 October 2026, Q4)
 - License (CC BY-SA 4.0 in Milestone 1, Q20)
 
-The repository name is derived, not asked: `<language>_<abbreviation>` in lowercase, as in `en_ult`. The wizard shows it and checks that no repository of that name exists in the owner (decided 1 October 2026). The language is searched in Door43's full list by tag, native name, English name, and alternate names, the owner's own languages first (Q20); a language whose tag the Scripture Burrito schema does not accept is shown as not choosable, with the reason (Q30). The wizard generates complete Scripture Burrito metadata for the selected type (E37 lists what the schema requires), with tC Admin recorded as generator. The manager reviews the generated metadata before creation. Every project tC Admin creates is Scripture Burrito (ADR 0008).
+The repository name is derived, not asked: `<language>_<abbreviation>` in lowercase, as in `en_ult`, and `<language>_obs` for Open Bible Stories. The wizard shows it and checks that no repository of that name exists in the owner (decided 1 October 2026). A second Open Bible Stories project for the same language in the same owner is refused as `name_taken`, and the wizard says to choose another owner (decided 28 October 2026 by Rich, #192). The language is searched in Door43's full list by tag, native name, English name, and alternate names, the owner's own languages first (Q20); a language whose tag the Scripture Burrito schema does not accept is shown as not choosable, with the reason (Q30). The wizard generates complete Scripture Burrito metadata for the selected type (E37 lists what the schema requires), with tC Admin recorded as generator. The manager reviews the generated metadata before creation. Every project tC Admin creates is Scripture Burrito (ADR 0008).
 
 After the owner is selected, project type is the first protected project-purpose choice. Once the first valid metadata is saved, it cannot be changed through normal editing. A purpose transition is a major repository change and is outside the normal version-one edit flow.
+
+A new project is created with its metadata, license, and README, and no book or story files, for Open Bible Stories as for a Bible: translationCore 4 creates them, or the manager adds them (decided 28 October 2026 by Rich, from the review with Birch, #194).
 
 The wizard's final step offers to add books or stories at once, by upload or by import from an existing repository (§8); the manager may also do that later or add books with translationCore 4 outside this app.
 
