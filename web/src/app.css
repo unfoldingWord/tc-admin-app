@@ -215,6 +215,10 @@ code { font-size: 0.95em; }
 .steps li.done { color: var(--text-body); }
 .selection th[scope="row"] { font-weight: 700; }
 .choice.inline { display: inline-flex; align-items: center; gap: 4px; margin-right: 16px; }
+/* The book table's choices, one column each, the same on every row (#191); one that does not apply is the browser's disabled radio, greyed. */
+.selection .choice-column { text-align: center; width: 8.5em; }
+.selection .choice { display: inline-flex; justify-content: center; margin: 0; }
+.selection .choice.unavailable input { cursor: not-allowed; }
 .meanings { font-size: 14px; }
 .meanings div { display: contents; }
 /* Door43's health-check findings (#124): one tone per severity, as the design system's tone slots

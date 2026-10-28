@@ -36,6 +36,31 @@ export function statesFor(book: Pick<Book, 'group'>): readonly SelectionState[] 
   return book.group === 'new' || book.group === 'unknown' ? ['include', 'leave_out'] : ['include', 'carry_forward', 'leave_out'];
 }
 
+/**
+ * Why a choice does not apply to a book, said to assistive technology beside the disabled choice (#191); `null` when it
+ * applies. Only a book in the last release can be carried forward.
+ */
+export function unavailableReason(book: Pick<Book, 'group'>, state: SelectionState): string | null {
+  if (statesFor(book).includes(state)) return null;
+  return book.group === 'unknown' ? 'not a book the last release is known to have' : 'not in the last release';
+}
+
+/** The buttons that set every book at once (#191, labels decided 28 October 2026 by Rich). */
+export const ALL_BOOKS_LABELS: Readonly<Record<SelectionState, string>> = {
+  include: 'Include all',
+  carry_forward: 'Carry all forward',
+  leave_out: 'Leave all out',
+};
+
+/**
+ * The selection with every book set to `state` where that choice applies, and every other book as it was (#191, Rich):
+ * "Carry all forward" leaves a new book as it is. Leaving released books out this way removes them, as one by one does
+ * (R2, R9): `removalsOf` lists them and the version must increase its first number.
+ */
+export function selectAll(books: readonly Book[], selection: Selection, state: SelectionState): Selection {
+  return Object.fromEntries(books.map(book => [book.id, statesFor(book).includes(state) ? state : (selection[book.id] ?? book.selection)]));
+}
+
 /** The plan's defaults (R4): every book as the plan selected it. */
 export const selectionOf = (plan: { preview: { books: readonly Book[] } }): Selection => Object.fromEntries(plan.preview.books.map(book => [book.id, book.selection]));
 

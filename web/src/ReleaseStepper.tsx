@@ -12,8 +12,8 @@
 // which Workers KV keeps eventually.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HEALTH_POLL } from '@tc-admin/shared/schema';
-import type { Preparation, ProjectSummary, SelectionState } from '@tc-admin/shared/schema';
+import { HEALTH_POLL, SELECTION_STATES } from '@tc-admin/shared/schema';
+import type { Preparation, ProjectSummary } from '@tc-admin/shared/schema';
 import { ApiError, callOperation, failureMessage } from './api/client';
 import { WRITE_LABELS } from './create-project';
 import { HealthFindings, door43Origin } from './HealthFindings';
@@ -21,6 +21,7 @@ import { findingsGate } from './health-findings';
 import { healthLabel, projectHash, releaseHash, releaseTagHash } from './portfolio-labels';
 import { activePreparations, activeSummary, preparationHash, refusedFor, withAnswer } from './preparations';
 import {
+  ALL_BOOKS_LABELS,
   GROUP_LABELS,
   RESTART_MESSAGE,
   SELECTION_LABELS,
@@ -36,7 +37,8 @@ import {
   selectionOf,
   selectionToSend,
   spellVersion,
-  statesFor,
+  selectAll,
+  unavailableReason,
   stepOf,
   storySummary,
   versionToSend,
@@ -459,12 +461,25 @@ function Stepper({ project, preparationId = null, onFailure }: Props) {
                 {plan.preview.version.baseline_tag ? `Compared with the last full release, ${plan.preview.version.baseline_tag}.` : 'No release yet: every book is included.'}{' '}
                 {tally.include} included · {tally.carry_forward} carried forward · {tally.leave_out} left out
               </p>
+              {/* Every book at once, each button skipping the books its choice does not apply to (#191). */}
+              <div className="actions" role="group" aria-label="Set every book">
+                {SELECTION_STATES.map(state => (
+                  <button key={state} type="button" className="secondary" onClick={() => setSelection(current => selectAll(books, current, state))}>
+                    {ALL_BOOKS_LABELS[state]}
+                  </button>
+                ))}
+              </div>
+              {/* The three choices in the same columns on every row; one that does not apply is disabled, and says why (#191). */}
               <table className="files selection">
                 <thead>
                   <tr>
                     <th scope="col">Book</th>
                     <th scope="col">Since the last release</th>
-                    <th scope="col">In this release</th>
+                    {SELECTION_STATES.map(state => (
+                      <th scope="col" key={state} className="choice-column">
+                        {SELECTION_LABELS[state]}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -472,14 +487,27 @@ function Stepper({ project, preparationId = null, onFailure }: Props) {
                     <tr key={book.id}>
                       <th scope="row">{book.id.toUpperCase()}</th>
                       <td>{GROUP_LABELS[book.group]}</td>
-                      <td>
-                        {statesFor(book).map(state => (
-                          <label key={state} className="choice inline">
-                            <input type="radio" name={`selection-${book.id}`} value={state} checked={(selection[book.id] ?? book.selection) === state} onChange={() => setSelection(current => ({ ...current, [book.id]: state as SelectionState }))} />{' '}
-                            {SELECTION_LABELS[state]}
-                          </label>
-                        ))}
-                      </td>
+                      {SELECTION_STATES.map(state => {
+                        const reason = unavailableReason(book, state);
+                        return (
+                          <td key={state} className="choice-column">
+                            <label className={reason ? 'choice unavailable' : 'choice'}>
+                              <input
+                                type="radio"
+                                name={`selection-${book.id}`}
+                                value={state}
+                                disabled={reason !== null}
+                                checked={(selection[book.id] ?? book.selection) === state}
+                                onChange={() => setSelection(current => ({ ...current, [book.id]: state }))}
+                              />
+                              <span className="visually-hidden">
+                                {SELECTION_LABELS[state]} {book.id.toUpperCase()}
+                                {reason && `: ${reason}`}
+                              </span>
+                            </label>
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
