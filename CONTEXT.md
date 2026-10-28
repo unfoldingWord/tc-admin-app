@@ -135,7 +135,7 @@ Adding books or stories to a project from an existing Door43 repository of any m
 _Avoid_: Convert, clone, fork, sync, source translation
 
 **Owner**:
-The Door43 organization or user account that holds a project's repository. The manager's own account is an owner like any organization; the portfolio lists the manager's organizations first.
+The Door43 organization or user account that holds a project's repository. The manager's own account is an owner like any organization; the portfolio lists the manager's own account first, then their organizations (decided 28 October 2026 by Rich, #195).
 _Avoid_: Namespace, org (in user-facing copy)
 
 **Abbreviation**:

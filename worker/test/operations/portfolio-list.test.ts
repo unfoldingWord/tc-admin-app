@@ -124,12 +124,12 @@ describe('portfolio.list', () => {
     expect(projects.map(project => project.ref.repo)).not.toContain('old');
   });
 
-  test('projects are grouped by owner, organizations by name first and the account\'s own repositories last', async () => {
+  test('projects are grouped by owner, the account\'s own repositories first and then organizations by name (#195)', async () => {
     const { output } = await run();
     expect(output.organizations.map(group => [group.name, group.projects.map(project => project.ref.repo)])).toEqual([
+      ['tc-admin-qa', ['empty']],
       ['bahtraku', ['id_tb1', 'Perjanjian-Baru-Pendau']],
       ['team', ['en_obs', 'id_tc_mrk', 'id_ts_mat', 'id_tw']],
-      ['tc-admin-qa', ['empty']],
     ]);
   });
 

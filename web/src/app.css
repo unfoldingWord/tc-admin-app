@@ -162,6 +162,13 @@ legend { font-weight: var(--fw-heavy); color: var(--text-heading); padding: 0 6p
 [role='alert'] { border-radius: var(--radius-lg); padding: 12px 16px; background: var(--tc-invalid-surface); border: var(--stroke) solid var(--border-danger); color: var(--text-body); }
 .muted { color: var(--text-tertiary); font-size: var(--fs-ui-md); }
 .owner { margin-top: 32px; }
+/* An owner group's heading folds the group (#195): it reads as the heading, not as a filled button. */
+.owner-heading { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+.owner-heading h2 { margin: 0; }
+.owner-toggle { all: unset; cursor: pointer; display: inline-flex; align-items: baseline; gap: 8px; font: inherit; color: var(--text-heading); }
+.owner-toggle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; border-radius: 4px; }
+.owner-chevron { display: inline-block; width: 1em; }
+.show-all-help { margin: 4px 0 0; max-width: 40rem; }
 .projects { list-style: none; margin: 0; padding: 0; }
 .project { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 20px; margin-bottom: 10px; border-radius: var(--radius-2xl); background: var(--surface-card); border: var(--stroke) solid var(--border); box-shadow: var(--shadow-card); transition: border-color var(--dur-hover) var(--ease-standard), box-shadow var(--dur-hover) var(--ease-standard); }
 .project:hover { border-color: var(--border-strong); box-shadow: var(--shadow-hover); }

@@ -98,3 +98,43 @@ describe('#24: filters and order in the portfolio', () => {
     expect(titles()).toEqual(['Alkitab TB', 'Perjanjian Baru Pendau']);
   });
 });
+
+describe('#195: collapsible owner groups, and what unsupported means', () => {
+  const two = { organizations: [{ name: 'tc-admin-qa', projects: [with_(projectOf('tc-admin-qa', 'id_mine', 'bible'), { title: 'Alkitab Saya' })] }, { name: 'bahtraku', projects: [pendau, tb1] }], freshness, analysis: { complete: 3, pending: 0 } };
+  const mountTwo = async () => {
+    render(<Portfolio account={{ login: 'tc-admin-qa', name: 'tC Admin QA' }} onFailure={() => {}} />);
+    await vi.waitFor(() => expect(worker.waiting()).toContain('GET /api/portfolio?show=supported'));
+    await worker.answer('GET', '/api/portfolio?show=supported', two);
+  };
+  const group = (name: string) => screen.getByRole('region', { name });
+
+  test('P1: a collapsed group keeps its name and count, hides its projects, opens again, and filters still count its projects', async () => {
+    await mountTwo();
+    const toggle = within(group('bahtraku')).getByRole('button', { name: 'bahtraku' });
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(within(group('bahtraku')).getByRole('heading', { name: 'bahtraku' })).toBeTruthy();
+    expect(within(group('bahtraku')).getByText('2 projects')).toBeTruthy();
+    expect(within(group('bahtraku')).queryAllByRole('listitem')).toEqual([]);
+    expect(within(group('tc-admin-qa')).getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByRole('status').textContent).toBe('3 projects');
+    fireEvent.click(toggle);
+    expect(within(group('bahtraku')).getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  test('P1: this browser remembers which groups are collapsed, as it remembers the order', async () => {
+    await mountTwo();
+    fireEvent.click(within(group('bahtraku')).getByRole('button', { name: 'bahtraku' }));
+    cleanup();
+    await mountTwo();
+    expect(within(group('bahtraku')).getByRole('button', { name: 'bahtraku' }).getAttribute('aria-expanded')).toBe('false');
+    expect(within(group('tc-admin-qa')).getByRole('button', { name: 'tc-admin-qa' }).getAttribute('aria-expanded')).toBe('true');
+  });
+
+  test('"Show all projects" says what tC Admin manages, so "unsupported" is explained', async () => {
+    await mountTwo();
+    const showAll = screen.getByRole('checkbox', { name: /Show all projects/ });
+    expect(document.getElementById(showAll.getAttribute('aria-describedby')!)?.textContent).toBe('tC Admin manages Bible and Open Bible Stories projects in Scripture Burrito. Other projects you can write to are listed as unsupported.');
+  });
+});
