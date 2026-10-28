@@ -76,7 +76,7 @@ describe('#15: the address survives a sign-in', () => {
     expect(window.location.hash).toBe('#/bahtraku/id_tb1');
     cleanup();
     render(<CreateProject account="tc-admin-qa" onCreated={() => {}} onFailure={() => {}} />);
-    expect((screen.getByLabelText('Project title') as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText('Bible title') as HTMLInputElement).value).toBe('');
   });
 });
 
@@ -87,7 +87,7 @@ describe('#15: the wizard\'s form survives a sign-in', () => {
     rememberReturn('#/new', 'tc-admin-qa');
     expect(takeReturn('tc-admin-qa')).toBe('#/new');
     render(<CreateProject account="tc-admin-qa" onCreated={() => {}} onFailure={() => {}} />);
-    expect((screen.getByLabelText('Project title') as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText('Bible title') as HTMLInputElement).value).toBe('');
   });
 
   test('#15: signing out forgets the kept form', async () => {
@@ -103,12 +103,12 @@ describe('#15: the wizard\'s form survives a sign-in', () => {
     rememberReturn('#/new', 'tc-admin-qa');
     expect(takeReturn('tc-admin-qa')).toBe('#/new');
     render(<CreateProject account="tc-admin-qa" onCreated={() => {}} onFailure={() => {}} />);
-    expect((screen.getByLabelText('Project title') as HTMLInputElement).value).toBe('Alkitab Pendau');
+    expect((screen.getByLabelText('Bible title') as HTMLInputElement).value).toBe('Alkitab Pendau');
     expect((screen.getByLabelText('Abbreviation') as HTMLInputElement).value).toBe('APD');
     expect(document.querySelector<HTMLInputElement>('input[name="testament_scope"][value="nt"]')?.checked).toBe(true);
     cleanup();
 
     render(<CreateProject account="tc-admin-qa" onCreated={() => {}} onFailure={() => {}} />);
-    expect((screen.getByLabelText('Project title') as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText('Bible title') as HTMLInputElement).value).toBe('');
   });
 });

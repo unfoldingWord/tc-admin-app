@@ -122,6 +122,8 @@ Moved into Milestone 1 on 1 October 2026 (Q25). Child issues created 5 October 2
 | [#82](https://github.com/unfoldingWord-box3/tc-admin-app/issues/82) Create an Open Bible Stories project | §6 | 0006, 0013 | W1, W3, H5 | E36, E37, E44, E46, E47, Q4, Q25 | `project.create.plan`, `project.create.apply` | model/burrito, operations | S1 |
 | [#83](https://github.com/unfoldingWord-box3/tc-admin-app/issues/83) Stories in uploads, imports, archives | §5, §8 | 0013 | H3, H5, W1 | E35, E36 | `upload.plan`, `import.plan`, `project.read` | model/books, model/upload, door43/archive | S2, S9 |
 | [#84](https://github.com/unfoldingWord-box3/tc-admin-app/issues/84) Release Open Bible Stories whole | §10 | 0003, 0005, 0010, 0013 | R1, R2, R3, R4, R10, H1, H2, H5 | E36, E59, E60, Q24, Q32 | `release.plan`, `release.prepare`, `release.create` | operations/release, web | S3 |
+| [#192](https://github.com/unfoldingWord/tc-admin-app/issues/192) Ask for the language first, fix an Open Bible Stories abbreviation as OBS, and name the title by project type | §6 | 0013 | W1, W2 | E37, E44 | `project.create.plan` (accepts any abbreviation; the wizard sends OBS) | web/CreateProject, web/create-project, shared/schema (the `name_taken` message) | S1 |
+| [#194](https://github.com/unfoldingWord/tc-admin-app/issues/194) Decide whether a new Open Bible Stories project starts with its 50 stories as empty files | §6, §8 | — | — | — | — (decided 28 October 2026: none; closed, nothing built) | — | — |
 
 ### EPIC: Demo readiness ([#44](https://github.com/unfoldingWord-box3/tc-admin-app/issues/44))
 

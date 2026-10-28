@@ -139,7 +139,7 @@ The Door43 organization or user account that holds a project's repository. The m
 _Avoid_: Namespace, org (in user-facing copy)
 
 **Abbreviation**:
-The short name of a project, such as ULT for unfoldingWord Literal Text, written to the metadata's `identification.abbreviation`. With the language code it forms the repository name, `<language>_<abbreviation>` in lowercase, which the wizard derives and checks for uniqueness in the owner.
+The short name of a project, such as ULT for unfoldingWord Literal Text, written to the metadata's `identification.abbreviation`. With the language code it forms the repository name, `<language>_<abbreviation>` in lowercase, which the wizard derives and checks for uniqueness in the owner. A Bible's is the manager's, except OBS; an Open Bible Stories project's is always OBS, so its repository is `<language>_obs` (decided 27 and 28 October 2026, #192).
 _Avoid_: Repository name (as a wizard field), slug, code
 
 **Translation details**:

@@ -48,27 +48,44 @@ export interface Form {
   details: TranslationDetails;
 }
 
-/** An Open Bible Stories project is abbreviated OBS unless the manager says otherwise (#82); a Bible's abbreviation is the manager's. */
+/**
+ * An Open Bible Stories project is always abbreviated OBS, so its repository is `<language>_obs` (decided 27 October 2026
+ * by Rich and Birch, #192, amending #82, which let the manager change it); a Bible's abbreviation is the manager's. The
+ * wizard holds it: `project.create.plan` still accepts another, for the seed script and the probes (Rich, #192).
+ */
 export const ABBREVIATION_DEFAULTS: Readonly<Record<CreatableType, string>> = { bible: '', obs: 'OBS' };
+
+/** The abbreviation the form sends: OBS for Open Bible Stories whatever a resumed draft held, a Bible's as written. */
+export const abbreviationOf = (form: Pick<Form, 'project_type' | 'abbreviation'>): string => (form.project_type === 'obs' ? ABBREVIATION_DEFAULTS.obs : form.abbreviation.trim());
+
+/** The title field's label and help, by project type (#192): Open Bible Stories' title is its own name in the target language. */
+export const TITLE_FIELD: Readonly<Record<CreatableType, { label: string; help: string }>> = {
+  bible: { label: 'Bible title', help: 'The name of this Bible in the target language.' },
+  obs: { label: 'Story collection title', help: 'What Open Bible Stories is called in the target language. It need not be a word-for-word translation.' },
+};
 
 export function newForm(owner: string): Form {
   return { owner, project_type: 'bible', title: '', abbreviation: '', language: null, testament_scope: null, details: { ...TEXT_TRANSLATION_FLAVOR_DEFAULTS } };
 }
 
-/** The form after a change of project type: the abbreviation default follows unless the manager wrote one, and Open Bible Stories has no testament scope (Q25). */
+/**
+ * The form after a change of project type: Open Bible Stories has no testament scope (Q25) and sends OBS through
+ * `abbreviationOf` (#192), so the field keeps a Bible's abbreviation for a return to a Bible; there, an OBS a draft
+ * from before #192 held is cleared.
+ */
 export function withProjectType(form: Form, type: CreatableType): Form {
-  const untouched = form.abbreviation.trim() === '' || form.abbreviation.trim().toLowerCase() === ABBREVIATION_DEFAULTS[form.project_type].toLowerCase();
+  const written = form.abbreviation.trim().toLowerCase() === ABBREVIATION_DEFAULTS.obs.toLowerCase() ? '' : form.abbreviation;
   return {
     ...form,
     project_type: type,
-    abbreviation: untouched ? ABBREVIATION_DEFAULTS[type] : form.abbreviation,
+    abbreviation: type === 'obs' ? form.abbreviation : written,
     testament_scope: type === 'obs' ? null : form.testament_scope,
   };
 }
 
 /** The repository name the Worker will derive, `<language>_<abbreviation>` in lowercase (product spec §6), shown as the manager types; `null` until both are given. */
-export function repositoryNameOf(form: Pick<Form, 'language' | 'abbreviation'>): string | null {
-  const abbreviation = form.abbreviation.trim();
+export function repositoryNameOf(form: Pick<Form, 'language' | 'abbreviation' | 'project_type'>): string | null {
+  const abbreviation = abbreviationOf(form);
   if (!form.language || !abbreviation) return null;
   return `${form.language.code.toLowerCase()}_${abbreviation.toLowerCase()}`;
 }
@@ -100,7 +117,8 @@ export function missing(form: Form): FieldErrors {
   const errors: FieldErrors = {};
   if (!form.owner) errors.owner = 'Choose an owner.';
   if (!form.title.trim()) errors.title = 'Give the project a title.';
-  if (!form.abbreviation.trim()) errors.abbreviation = 'Give the project an abbreviation, such as ULT.';
+  if (!abbreviationOf(form)) errors.abbreviation = 'Give the project an abbreviation, such as ULT.';
+  else if (form.project_type === 'bible' && abbreviationOf(form).toLowerCase() === ABBREVIATION_DEFAULTS.obs.toLowerCase()) errors.abbreviation = OBS_KEPT;
   if (!form.language) errors.language = 'Choose a language from the list.';
   else if (!form.language.tag_accepted) errors.language = tagRefused(form.language.code);
   if (form.project_type === 'bible' && !form.testament_scope) errors.testament_scope = 'Choose a testament scope for a Bible project.';
@@ -114,7 +132,7 @@ export function planInput(form: Form & { language: Language }): OperationInput<'
     owner: form.owner,
     project_type: form.project_type,
     title: form.title.trim(),
-    abbreviation: form.abbreviation.trim(),
+    abbreviation: abbreviationOf(form),
     language: { code: form.language.code, title: form.language.title, direction: form.language.direction },
     testament_scope: bible ? form.testament_scope : null,
     flavor: bible ? { ...form.details } : null,
@@ -138,15 +156,30 @@ const FIELD_OF_PATH: Readonly<Record<string, Field>> = {
   'flavor.audience': 'details',
 };
 
+/** What a manager can do about a taken name (#192): a Bible's abbreviation can change; an Open Bible Stories project's is always OBS. */
+export const NAME_TAKEN_WAY_OUT: Readonly<Record<CreatableType, (repo: string | null) => string>> = {
+  bible: () => 'Change the abbreviation, or choose another owner.',
+  // The repository named, not a placeholder (bench round 1 on #200, George): an Open Bible Stories project in this language is always that name.
+  obs: repo => (repo ? `An Open Bible Stories project in this language is always named ${repo}, so choose another owner.` : 'An Open Bible Stories project in this language always has this name, so choose another owner.'),
+};
+
+/** A Bible may not be abbreviated OBS, which names Open Bible Stories projects (decided 28 October 2026 by Rich, bench round 1 on #200). */
+export const OBS_KEPT = 'OBS is kept for Open Bible Stories projects. Choose another abbreviation.';
+
 /**
  * The field a failure belongs to, with its message, so it is shown in place (X2):
  * a `validation_failed` names its fields in `details.fields`; `name_taken` is
- * answered by changing the abbreviation (or the owner); `permission_denied` from
- * a plan means the owner allows no creation (A2). Anything else is `null`: not a
- * field's, and shown for the whole form.
+ * answered by changing a Bible's abbreviation, or the owner, which is the only way
+ * for Open Bible Stories (#192); `permission_denied` from a plan means the owner
+ * allows no creation (A2). Anything else is `null`: not a field's, and shown for
+ * the whole form.
  */
-export function fieldErrors(error: OperationErrorShape): FieldErrors | null {
-  if (error.code === 'name_taken') return { abbreviation: error.message };
+export function fieldErrors(error: OperationErrorShape, type: CreatableType = 'bible'): FieldErrors | null {
+  if (error.code === 'name_taken') {
+    const repo = typeof error.details.repo_name === 'string' && error.details.repo_name ? error.details.repo_name : null;
+    const message = `${error.message} ${NAME_TAKEN_WAY_OUT[type](repo)}`;
+    return type === 'obs' ? { owner: message } : { abbreviation: message };
+  }
   if (error.code === 'permission_denied') return { owner: error.message };
   if (error.code !== 'validation_failed') return null;
   const fields = Array.isArray(error.details.fields) ? (error.details.fields as { path?: unknown; message?: unknown }[]) : [];

@@ -29,6 +29,7 @@ import {
   DETAIL_VALUE_LABELS,
   LICENSE_LABEL,
   TESTAMENT_SCOPE_LABELS,
+  TITLE_FIELD,
   WRITE_LABELS,
   applyFailure,
   fieldErrors,
@@ -76,7 +77,7 @@ function without(errors: FieldErrors, field: Field): FieldErrors {
 }
 
 export function CreateProject({ account, onCreated, onFailure }: Props) {
-  const ids = { title: useId(), abbreviation: useId(), language: useId() };
+  const ids = { title: useId(), titleHelp: useId(), abbreviation: useId(), language: useId() };
   const [owners, setOwners] = useState<Owner[] | null>(null);
   // The form a sign-in in the middle left behind, when this opening is the return from it (#15); otherwise a new form.
   const [form, setForm] = useState<Form>(() => resumedDraft(account) ?? newForm(''));
@@ -152,7 +153,7 @@ export function CreateProject({ account, onCreated, onFailure }: Props) {
     setQuery('');
   };
 
-  const fieldsOf = (failure: unknown) => (failure instanceof ApiError ? fieldErrors(failure.error) : null);
+  const fieldsOf = (failure: unknown) => (failure instanceof ApiError ? fieldErrors(failure.error, form.project_type) : null);
   const errorOf = (failure: unknown) => (failure instanceof ApiError ? failure.error : null);
   const newPlan = (next: { plan: Plan; form: Form } | null) => {
     setPlanned(next);
@@ -413,23 +414,6 @@ export function CreateProject({ account, onCreated, onFailure }: Props) {
       </fieldset>
 
       <fieldset>
-        <legend>Name</legend>
-        <label className="field" htmlFor={ids.title}>
-          Project title
-        </label>
-        <input id={ids.title} type="text" value={form.title} onChange={event => update({ title: event.target.value }, 'title')} placeholder="The name of the Bible or story collection" />
-        {fieldError('title')}
-        <label className="field" htmlFor={ids.abbreviation}>
-          Abbreviation
-        </label>
-        <input id={ids.abbreviation} type="text" value={form.abbreviation} onChange={event => update({ abbreviation: event.target.value }, 'abbreviation')} placeholder="Such as ULT" />
-        {fieldError('abbreviation')}
-        <p className="derived">
-          Repository name: <code>{repositoryNameOf(form) ?? '<language>_<abbreviation>'}</code>, from the language and the abbreviation in lowercase.
-        </p>
-      </fieldset>
-
-      <fieldset>
         <legend>Target language</legend>
         {form.language ? (
           <p className="chosen">
@@ -479,6 +463,32 @@ export function CreateProject({ account, onCreated, onFailure }: Props) {
           </>
         )}
         {fieldError('language')}
+      </fieldset>
+
+      <fieldset>
+        <legend>Name</legend>
+        <label className="field" htmlFor={ids.title}>
+          {TITLE_FIELD[form.project_type].label}
+        </label>
+        <p className="muted" id={ids.titleHelp}>
+          {TITLE_FIELD[form.project_type].help}
+        </p>
+        <input id={ids.title} type="text" value={form.title} onChange={event => update({ title: event.target.value }, 'title')} aria-describedby={ids.titleHelp} />
+        {fieldError('title')}
+        {/* An Open Bible Stories project is always OBS: no field to change it (#192, amending #82). */}
+        {bible && (
+          <>
+            <label className="field" htmlFor={ids.abbreviation}>
+              Abbreviation
+            </label>
+            <input id={ids.abbreviation} type="text" value={form.abbreviation} onChange={event => update({ abbreviation: event.target.value }, 'abbreviation')} placeholder="Such as ULT" />
+            {fieldError('abbreviation')}
+          </>
+        )}
+        <p className="derived">
+          Repository name: <code>{repositoryNameOf(form) ?? (bible ? '<language>_<abbreviation>' : '<language>_obs')}</code>
+          {bible ? ', from the language and the abbreviation in lowercase.' : ', from the language: every Open Bible Stories project is abbreviated OBS.'}
+        </p>
       </fieldset>
 
       {bible && (

@@ -92,7 +92,7 @@ describe('#154: each page names itself', () => {
     await worker.answer('GET', languages, { languages: [{ code: 'id', title: 'Bahasa Indonesia', english: 'Indonesian', direction: 'ltr', alternates: [], tag_accepted: true }], owner_languages: null, freshness });
     fireEvent.click(document.querySelector('input[name=owner][value="tc-admin-qa-org"]')!);
     fireEvent.click(document.querySelector('input[name=project_type][value=bible]')!);
-    fireEvent.change(screen.getByLabelText('Project title'), { target: { value: 'Alkitab Percobaan' } });
+    fireEvent.change(screen.getByLabelText('Bible title'), { target: { value: 'Alkitab Percobaan' } });
     fireEvent.change(screen.getByLabelText('Abbreviation'), { target: { value: 'tcap' } });
     fireEvent.change(screen.getByLabelText(/Search by name or tag/), { target: { value: 'Bahasa' } });
     fireEvent.click(await screen.findByRole('button', { name: /Bahasa Indonesia/ }));

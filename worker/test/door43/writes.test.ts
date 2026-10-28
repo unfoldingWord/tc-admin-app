@@ -140,7 +140,7 @@ describe('createRepository', () => {
     const answer = (status: number, body: unknown) => createRepository(client(async () => json(body, status)), { login: 'team', kind: 'organization' }, { name: 'en_ult', description: '' });
     const taken = (await failure(answer(409, { message: 'The repository with the same name already exists.' })))!;
     expect(taken.code).toBe('name_taken');
-    expect(taken.message).toBe('A repository named en_ult already exists in team. Change the abbreviation.');
+    expect(taken.message).toBe('A repository named en_ult already exists in team.');
     const invalid = (await failure(answer(422, { message: 'repo name is invalid' })))!;
     expect(invalid.code).toBe('validation_failed');
     expect(invalid.message).toBe('abbreviation: repo name is invalid');
