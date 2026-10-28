@@ -120,7 +120,7 @@ Generated metadata must follow the Scripture Burrito specification. Door43's hea
 
 ## 8. Adding books and stories
 
-A manager adds books or stories to a project in two ways: by uploading files they have, or by importing from an existing Door43 repository. translationCore 4 is the third way, outside this app.
+A manager adds books or stories to a project in two ways: by uploading files they have, or by importing from an existing Door43 repository. translationCore 4 is the third way, outside this app. The project page says under each action where it takes books or stories from: "Add books" uploads USFM files (Markdown for stories) from the manager's computer, and "Import books" copies them from another project on Door43; under "Prepare a release" it says what that does (#196).
 
 ### Uploads
 
@@ -227,6 +227,8 @@ Changes on the default branch enter a release only through included books. A pre
 Each step is one operation in the [operation catalog](operations.md): steps 1 and 2 are `release.plan` and `release.prepare`, step 3 is `preparation.read`, steps 4 to 7 are `release.create` with the confirmed notes, version, and pre-release choice, and step 8 is `release.promote`. Nothing is written to Door43 before step 2, and nothing outside the plan's announced writes is written after it.
 
 The temporary branch is deleted only after release creation succeeds. It remains available for inspection and retry after a release failure.
+
+A release is opened from the project page's latest full release, or from its outstanding pre-release, which is promoted on its own page (step 8). The field that opened any release by its tag was removed on 28 October 2026 by Rich, since those two links reach every release a manager acts on (#196).
 
 If the project changes during preparation, tC Admin shows:
 

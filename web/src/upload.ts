@@ -57,6 +57,9 @@ export const unitNoun = (type: UploadType, count: number): string => NOUNS[type]
 /** The action that opens the upload, in glossary words: "Add books" or "Add stories". */
 export const addAction = (type: UploadType): string => `Add ${NOUNS[type][1]}`;
 
+/** Where the upload takes books or stories from, under its action on the project page (#196). */
+export const addHint = (type: UploadType): string => `Upload ${type === 'bible' ? 'USFM' : 'Markdown'} files from your computer`;
+
 /** The confirm button names the write: "Add 3 books", "Add 1 story". */
 export const confirmLabel = (type: UploadType, count: number): string => `Add ${count} ${unitNoun(type, count)}`;
 

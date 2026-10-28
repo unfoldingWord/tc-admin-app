@@ -111,6 +111,7 @@ Moved into Milestone 1 on 1 October 2026 (Q25); #47 re-scoped from conversion to
 | [#163](https://github.com/unfoldingWord/tc-admin-app/issues/163) Offer a repository's books at its latest content when the search answers an older entry | §8 | 0013 | H3, W2 | E20, E35, E77 | `source.search` | door43/catalog, operations/source-search | — |
 | [#172](https://github.com/unfoldingWord/tc-admin-app/issues/172) Filter the manager's organizations by the owner search on import | §8 | — | — | E35, E61 | `owner.search` (display only) | web (ImportScreen, import) | S9 |
 | [#81](https://github.com/unfoldingWord-box3/tc-admin-app/issues/81) Import screen | §8 | 0013 | X1, X2 | E35, E36, E69 | `owner.search`, `source.search`, `import.plan`, `import.apply` | web (ImportScreen, import) | S9 |
+| [#196](https://github.com/unfoldingWord/tc-admin-app/issues/196) Say where Add books and Import books take books from, and settle the release-by-tag field | §8, §10 | — | — | — | `release.lookup` (its field removed) | web/ProjectView, web/upload, web/import | — |
 
 ### EPIC: Open Bible Stories ([#48](https://github.com/unfoldingWord-box3/tc-admin-app/issues/48))
 

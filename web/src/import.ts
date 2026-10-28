@@ -27,6 +27,9 @@ export type Stage = Source['stage'];
 /** The action that opens the import, in glossary words: "Import books" or "Import stories". */
 export const importAction = (type: UploadType): string => `Import ${unitNoun(type, 2)}`;
 
+/** Where the import takes books or stories from, under its action on the project page (#196). */
+export const importHint = (type: UploadType): string => `Copy ${unitNoun(type, 2)} from another project on Door43`;
+
 /** The confirm button names the write: "Import 3 books", "Import 1 story". */
 export const importConfirmLabel = (type: UploadType, count: number): string => `Import ${count} ${unitNoun(type, count)}`;
 
