@@ -82,7 +82,8 @@ export function confirmedSelection(payload: ReleasePlanPayload, sent: Readonly<R
   for (const candidate of payload.candidates) {
     const state = sent[candidate.id];
     if (!state) throw validation('selection', `${candidate.id} has no selection state.`);
-    if (state === 'include' && !candidate.default_branch) throw validation('selection', `${candidate.id} is not on the default branch and cannot be included.`);
+    // A book whose file the branch no longer has, though its catalog may still list it, cannot be included either (#190).
+    if (state === 'include' && !candidate.default_branch?.sha) throw validation('selection', `${candidate.id} is not on the default branch and cannot be included.`);
     if (state === 'carry_forward' && !candidate.baseline) throw validation('selection', `${candidate.id} is not in the previous release and cannot be carried forward.`);
     selection[candidate.id] = state;
   }

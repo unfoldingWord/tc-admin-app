@@ -32,6 +32,9 @@ describe('the selection (product spec §10)', () => {
   test('R4: a choice that does not apply says why: only a book in the last release can be carried forward (#191)', () => {
     expect(unavailableReason({ group: 'new' }, 'carry_forward')).toBe('not in the last release');
     expect(unavailableReason({ group: 'unknown' }, 'carry_forward')).toBe('not a book the last release is known to have');
+    // A released book deleted from the default branch: kept or left out, never included (#190).
+    expect(statesFor({ group: 'deleted_from_branch' })).toEqual(['carry_forward', 'leave_out']);
+    expect(unavailableReason({ group: 'deleted_from_branch' }, 'include')).toBe('not on the default branch');
     for (const state of ['include', 'leave_out'] as const) expect(unavailableReason({ group: 'new' }, state)).toBeNull();
     for (const state of ['include', 'carry_forward', 'leave_out'] as const) expect(unavailableReason({ group: 'unchanged' }, state)).toBeNull();
   });
@@ -47,10 +50,25 @@ describe('the selection (product spec §10)', () => {
     expect(canPrepare(books, allOut)).toBe(false);
   });
 
+  test('R2, R4: an all-books button on one list keeps every other book\'s choice, in both directions, so the selection sent names every book (#190)', () => {
+    const decide = books.filter(book => book.group !== 'unchanged');
+    const carried = books.filter(book => book.group === 'unchanged');
+    // The carried book left out, then "Include all" on the new and changed books: JHN stays left out, and stays a removal.
+    const afterInclude = selectAll(decide, { ...selectionOf(plan), jhn: 'leave_out' }, 'include');
+    expect(afterInclude).toEqual({ mat: 'include', mrk: 'include', jhn: 'leave_out' });
+    expect(removalsOf(books, afterInclude)).toEqual(['jhn']);
+    // A changed book included, then "Leave all out" on the carried books: MAT stays included.
+    const afterLeave = selectAll(carried, { ...selectionOf(plan), mat: 'include' }, 'leave_out');
+    expect(afterLeave).toEqual({ mat: 'include', mrk: 'leave_out', jhn: 'leave_out' });
+    expect(Object.keys(selectionToSend('bible', afterLeave)).sort()).toEqual(['jhn', 'mat', 'mrk']);
+  });
+
   test('R2: only a released book left out is a removal, named; a new book left out is not', () => {
     expect(removalsOf(books, selectionOf(plan))).toEqual([]);
     expect(removalsOf(books, { ...selectionOf(plan), jhn: 'leave_out' })).toEqual(['jhn']);
     expect(removalsOf(books, { mat: 'leave_out', mrk: 'leave_out', jhn: 'leave_out' })).toEqual(['mat', 'jhn']);
+    // A released book deleted from the default branch, left out, is a removal too (#190).
+    expect(removalsOf([{ id: 'jud', group: 'deleted_from_branch', selection: 'carry_forward' }], { jud: 'leave_out' })).toEqual(['jud']);
   });
 
   test('R4: a release needs at least one book included or carried forward', () => {

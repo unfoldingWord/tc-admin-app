@@ -265,6 +265,10 @@ describe('what the prepare refuses, writing nothing', () => {
     expect((await failure(impossible.run()))!.message).toBe('selection: gen is not in the previous release and cannot be carried forward.');
     const payload = { project_type: 'obs' as const, candidates: [{ id: '01', group: 'new' as const, selection: 'include' as const, default_branch: { id: '01', path: 'ingredients/content/01.md', title: '', sha: 'a', size: 1 }, baseline: null }] };
     expect(() => confirmedSelection(payload as never, { '01': 'include' })).toThrow(/send no selection/);
+    // A released book whose file the branch deleted, though the branch's catalog still lists it, is refused for Include before anything is read or written (#190).
+    const deleted = { id: 'jud', group: 'deleted_from_branch' as const, selection: 'carry_forward' as const, default_branch: { id: 'jud', path: 'ingredients/JUD.usfm', title: '', sha: null, size: null }, baseline: { id: 'jud', path: 'ingredients/JUD.usfm', title: '', sha: 'j1', size: 1 } };
+    expect(() => confirmedSelection({ project_type: 'bible', candidates: [deleted] } as never, { jud: 'include' })).toThrow('selection: jud is not on the default branch and cannot be included.');
+    expect(confirmedSelection({ project_type: 'bible', candidates: [deleted] } as never, { jud: 'carry_forward' })).toEqual({ jud: 'carry_forward' });
     expect(confirmedSelection(payload as never, {})).toEqual({ '01': 'include' });
   });
 
@@ -508,7 +512,7 @@ describe('an Open Bible Stories release (#84)', () => {
   });
 
   test('R4: a stored Open Bible Stories plan with no story on the default branch is invalid_selection, before any write', () => {
-    const lost = { id: '01', group: 'unchanged' as const, selection: 'leave_out' as const, default_branch: null, baseline: { id: '01', path: 'ingredients/content/01.md', title: '', sha: 'a', size: 1 } };
+    const lost = { id: '01', group: 'deleted_from_branch' as const, selection: 'leave_out' as const, default_branch: null, baseline: { id: '01', path: 'ingredients/content/01.md', title: '', sha: 'a', size: 1 } };
     expect(() => confirmedSelection({ project_type: 'obs', candidates: [lost] } as never, {})).toThrow(expect.objectContaining({ code: 'invalid_selection' }));
     expect(() => confirmedSelection({ project_type: 'obs', candidates: [] } as never, {})).toThrow(expect.objectContaining({ code: 'invalid_selection' }));
     // The refusal carries the catalog's fixed sentence for the code, quoted, not the plan's.

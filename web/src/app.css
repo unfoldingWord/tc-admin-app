@@ -219,6 +219,10 @@ code { font-size: 0.95em; }
 .selection .choice-column { text-align: center; width: 8.5em; }
 .selection .choice { display: inline-flex; justify-content: center; margin: 0; }
 .selection .choice.unavailable input { cursor: not-allowed; }
+/* Release preparation's selection step (#190): the books carried forward, closed until the manager opens them to leave some out. */
+.carried { margin: 16px 0; border: var(--stroke) solid var(--border); border-radius: var(--radius-lg); padding: 8px 16px; background: var(--surface-card); }
+.carried summary { cursor: pointer; font-weight: var(--fw-heavy); color: var(--text-heading); padding: 4px 0; }
+.version-field { margin: 16px 0; }
 .meanings { font-size: 14px; }
 .meanings div { display: contents; }
 /* Door43's health-check findings (#124): one tone per severity, as the design system's tone slots

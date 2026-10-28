@@ -40,8 +40,8 @@ export const SELECTION_STATES = ['include', 'carry_forward', 'leave_out'] as con
 export const SelectionState = z.enum(SELECTION_STATES);
 export type SelectionState = z.infer<typeof SelectionState>;
 
-/** Candidate group. */
-export const CANDIDATE_GROUPS = ['new', 'changed_released', 'unchanged', 'unknown'] as const;
+/** Candidate group; `deleted_from_branch`, a released book the default branch no longer has, since 28 October 2026 (#190). */
+export const CANDIDATE_GROUPS = ['new', 'changed_released', 'unchanged', 'deleted_from_branch', 'unknown'] as const;
 export const CandidateGroup = z.enum(CANDIDATE_GROUPS);
 export type CandidateGroup = z.infer<typeof CandidateGroup>;
 

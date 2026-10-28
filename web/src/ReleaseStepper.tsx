@@ -10,19 +10,22 @@
 // directly, so a reload or a new sign-in lands back on it (#125). The
 // preparation this page made is held from its receipt, never from the list,
 // which Workers KV keeps eventually.
+// The selection step puts the version first, then the new and changed books,
+// where the decisions are, then the books carried forward from the last
+// release, closed until the manager opens them to leave some out, and the next
+// action close below (#190, layout A, chosen by Rich).
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HEALTH_POLL, SELECTION_STATES } from '@tc-admin/shared/schema';
 import type { Preparation, ProjectSummary } from '@tc-admin/shared/schema';
 import { ApiError, callOperation, failureMessage } from './api/client';
+import { BookChoices } from './BookChoices';
 import { WRITE_LABELS } from './create-project';
 import { HealthFindings, door43Origin } from './HealthFindings';
 import { findingsGate } from './health-findings';
 import { healthLabel, projectHash, releaseHash, releaseTagHash } from './portfolio-labels';
 import { activePreparations, activeSummary, preparationHash, refusedFor, withAnswer } from './preparations';
 import {
-  ALL_BOOKS_LABELS,
-  GROUP_LABELS,
   RESTART_MESSAGE,
   SELECTION_LABELS,
   SELECTION_MEANINGS,
@@ -37,14 +40,16 @@ import {
   selectionOf,
   selectionToSend,
   spellVersion,
-  selectAll,
-  unavailableReason,
+  partitionBooks,
   stepOf,
   storySummary,
   versionToSend,
 } from './release-stepper';
 import type { ReleasePlan, Selection } from './release-stepper';
 import { VERSION_RULE_LABELS } from './labels';
+
+/** The books carried forward offer only these: an unchanged book's file is the released one, or is gone (#190). */
+const CARRIED_STATES = ['carry_forward', 'leave_out'] as const;
 
 interface Props {
   project: ProjectSummary;
@@ -75,6 +80,9 @@ function Stepper({ project, preparationId = null, onFailure }: Props) {
   const [plan, setPlan] = useState<ReleasePlan | null>(null);
   const [selection, setSelection] = useState<Selection>({});
   const [version, setVersion] = useState('');
+  // The selection step's two short steps (#190): the books, then the version of the plan it was opened for, so every new plan starts at the books.
+  const [versionFor, setVersionFor] = useState<string | null>(null);
+  const versionHeading = useRef<HTMLHeadingElement>(null);
   const [preparation, setPreparation] = useState<Preparation | null>(null);
   const [notes, setNotes] = useState('');
   const [prerelease, setPrerelease] = useState(false);
@@ -377,6 +385,53 @@ function Stepper({ project, preparationId = null, onFailure }: Props) {
   const removals = removalsOf(books, selection);
   const tally = counts(books, selection);
   const stories = storySummary(books);
+  const stage: 'books' | 'version' = plan && versionFor === plan.id ? 'version' : 'books';
+  const setStage = (next: 'books' | 'version') => setVersionFor(next === 'version' && plan ? plan.id : null);
+  // Opening the version moves focus to its heading, so a screen reader hears where the step went.
+  useEffect(() => {
+    if (stage === 'version') versionHeading.current?.focus();
+  }, [stage]);
+  const baseline = plan?.preview.version.baseline_tag ?? null;
+  const { decide, carried } = partitionBooks(books);
+  const carriedLeftOut = carried.filter(book => (selection[book.id] ?? book.selection) === 'leave_out').length;
+  const tallyText = `${tally.include} included · ${tally.carry_forward} carried forward · ${tally.leave_out} left out`;
+  const meanings = (
+    <dl className="report meanings">
+      {SELECTION_STATES.map(state => (
+        <div key={state}>
+          <dt>{SELECTION_LABELS[state]}</dt>
+          <dd>{SELECTION_MEANINGS[state]}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+  const removalsNote = removals.length > 0 && (
+    <p role="status">
+      Removed from this release onward: {removals.map(id => id.toUpperCase()).join(', ')}. Earlier releases keep them. The version must then increase its first number.
+    </p>
+  );
+  const versionField = plan && (
+    <div className="version-field">
+      <label className="inline-field" htmlFor="release-version">
+        <span className="field-label">Version:</span>
+        <input id="release-version" value={version} onChange={event => changeVersion(event.target.value)} />
+      </label>
+      <p className="derived">
+        Calculated: {plan.preview.version.proposed}, {VERSION_RULE_LABELS[plan.preview.version.rule_applied]}. The version must be after {plan.preview.version.baseline_tag ?? 'none'} and can be edited.
+      </p>
+    </div>
+  );
+  const prepareAction = (
+    <>
+      <div className="actions">
+        <button type="button" onClick={() => void prepare()} disabled={busy !== null || !canPrepare(books, selection)}>
+          Prepare the snapshot
+        </button>
+        {!canPrepare(books, selection) && <span className="field-error">A release needs at least one book included or carried forward.</span>}
+      </div>
+      <p className="muted">Nothing is written until the snapshot is prepared: then a branch {`temp-tca-release/<version>`} and its commits, never the default branch.</p>
+    </>
+  );
   const gate = preparation ? releaseGate(preparation) : 'blocked';
 
   return (
@@ -451,97 +506,73 @@ function Stepper({ project, preparationId = null, onFailure }: Props) {
             <>
               <p>An Open Bible Stories release takes the whole default branch: every story, no selection.</p>
               <p className="derived">
-                {plan.preview.version.baseline_tag ? `Compared with the last full release, ${plan.preview.version.baseline_tag}.` : 'No release yet.'} {stories.count}
+                {baseline ? `Compared with the last full release, ${baseline}.` : 'No release yet.'} {stories.count}
               </p>
               {stories.removed && <p role="status">{stories.removed}</p>}
+              {versionField}
+              {prepareAction}
             </>
           ) : (
             <>
-              <p className="derived">
-                {plan.preview.version.baseline_tag ? `Compared with the last full release, ${plan.preview.version.baseline_tag}.` : 'No release yet: every book is included.'}{' '}
-                {tally.include} included · {tally.carry_forward} carried forward · {tally.leave_out} left out
-              </p>
-              {/* Every book at once, each button skipping the books its choice does not apply to (#191). */}
-              <div className="actions" role="group" aria-label="Set every book">
-                {SELECTION_STATES.map(state => (
-                  <button key={state} type="button" className="secondary" onClick={() => setSelection(current => selectAll(books, current, state))}>
-                    {ALL_BOOKS_LABELS[state]}
-                  </button>
-                ))}
-              </div>
-              {/* The three choices in the same columns on every row; one that does not apply is disabled, and says why (#191). */}
-              <table className="files selection">
-                <thead>
-                  <tr>
-                    <th scope="col">Book</th>
-                    <th scope="col">Since the last release</th>
-                    {SELECTION_STATES.map(state => (
-                      <th scope="col" key={state} className="choice-column">
-                        {SELECTION_LABELS[state]}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {books.map(book => (
-                    <tr key={book.id}>
-                      <th scope="row">{book.id.toUpperCase()}</th>
-                      <td>{GROUP_LABELS[book.group]}</td>
-                      {SELECTION_STATES.map(state => {
-                        const reason = unavailableReason(book, state);
-                        return (
-                          <td key={state} className="choice-column">
-                            <label className={reason ? 'choice unavailable' : 'choice'}>
-                              <input
-                                type="radio"
-                                name={`selection-${book.id}`}
-                                value={state}
-                                disabled={reason !== null}
-                                checked={(selection[book.id] ?? book.selection) === state}
-                                onChange={() => setSelection(current => ({ ...current, [book.id]: state }))}
-                              />
-                              <span className="visually-hidden">
-                                {SELECTION_LABELS[state]} {book.id.toUpperCase()}
-                                {reason && `: ${reason}`}
-                              </span>
-                            </label>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <dl className="report meanings">
-                {(['include', 'carry_forward', 'leave_out'] as const).map(state => (
-                  <div key={state}>
-                    <dt>{SELECTION_LABELS[state]}</dt>
-                    <dd>{SELECTION_MEANINGS[state]}</dd>
-                  </div>
-                ))}
-              </dl>
-              {removals.length > 0 && (
-                <p role="status">
-                  Removed from this release onward: {removals.map(id => id.toUpperCase()).join(', ')}. Earlier releases keep them. The version must then increase its first number.
-                </p>
+              {/* Two short steps (Rich chose this of three layouts run locally, 28 October 2026, #190): first the books, the new
+                  and changed ones where the decisions are and the ones carried forward closed until opened; then the version
+                  and the action, so neither is below a long list. */}
+              {stage === 'books' && (
+                <>
+                  <p className="derived">
+                    {baseline ? `Compared with the last full release, ${baseline}.` : 'No release yet: every book is included.'} {tallyText}
+                  </p>
+                  {meanings}
+                  <section aria-label="New and changed books">
+                    <h3>{baseline ? `New and changed since ${baseline}` : 'Books in this release'}</h3>
+                    {decide.length > 0 ? (
+                      <BookChoices label="Set every new and changed book" books={decide} selection={selection} onChange={setSelection} />
+                    ) : (
+                      <p className="muted">No book is new or changed since {baseline}.</p>
+                    )}
+                  </section>
+                  {carried.length > 0 && (
+                    <details className="carried">
+                      <summary>
+                        {carriedLeftOut === 0 ? `Books carried forward from ${baseline ?? 'the last release'} (${carried.length})` : `Books from ${baseline ?? 'the last release'} (${carried.length}, ${carriedLeftOut} left out)`}
+                      </summary>
+                      <p className="muted">Each is carried forward unchanged. Leave one out only to remove it from this release onward: earlier releases keep it, and the version must then increase its first number.</p>
+                      <BookChoices label="Set every book carried forward" books={carried} selection={selection} onChange={setSelection} states={CARRIED_STATES} />
+                    </details>
+                  )}
+                  {removalsNote}
+                  {plan.preview.administrative.length > 0 && <p className="muted">Taken from the default branch with every release: {plan.preview.administrative.join(', ')}.</p>}
+                </>
               )}
-              {plan.preview.administrative.length > 0 && <p className="muted">Taken from the default branch with every release: {plan.preview.administrative.join(', ')}.</p>}
+              {stage === 'books' && (
+                <div className="actions">
+                  <button type="button" onClick={() => setStage('version')} disabled={!canPrepare(books, selection)}>
+                    Continue to the version
+                  </button>
+                  {!canPrepare(books, selection) && <span className="field-error">A release needs at least one book included or carried forward.</span>}
+                </div>
+              )}
+              {stage === 'version' && (
+                <>
+                  <h3 ref={versionHeading} tabIndex={-1}>
+                    Version
+                  </h3>
+                  <p className="derived">
+                    {baseline ? `Compared with the last full release, ${baseline}: ` : ''}
+                    {tallyText}
+                  </p>
+                  {removalsNote}
+                  {versionField}
+                  {prepareAction}
+                  <p>
+                    <button type="button" className="secondary" onClick={() => setStage('books')}>
+                      Back to the books
+                    </button>
+                  </p>
+                </>
+              )}
             </>
           )}
-          <label className="inline-field" htmlFor="release-version">
-            <span className="field-label">Version:</span>
-            <input id="release-version" value={version} onChange={event => changeVersion(event.target.value)} />
-          </label>
-          <p className="derived">
-            Calculated: {plan.preview.version.proposed}, {VERSION_RULE_LABELS[plan.preview.version.rule_applied]}. The version must be after {plan.preview.version.baseline_tag ?? 'none'} and can be edited.
-          </p>
-          <p className="muted">Nothing is written until the snapshot is prepared: then a branch {`temp-tca-release/<version>`} and its commits, never the default branch.</p>
-          <div className="actions">
-            <button type="button" onClick={() => void prepare()} disabled={busy !== null || !canPrepare(books, selection)}>
-              Prepare the snapshot
-            </button>
-            {!canPrepare(books, selection) && <span className="field-error">A release needs at least one book included or carried forward.</span>}
-          </div>
         </>
       )}
 

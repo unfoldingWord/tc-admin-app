@@ -71,7 +71,7 @@ Type, coverage, and health are read from the catalog metadata Door43 returns in 
 - **Administrative** (`administrative`): Listed in project metadata without a book or story scope. Always carried forward.
 - **Unknown** (`unknown`): Neither a recognized book or story nor listed in project metadata.
 
-For selection, `release.plan` groups books as `new` (unreleased), `changed_released`, `unchanged` (released and identical), and `unknown`, and gives each book a selection state: `include`, `carry_forward`, or `leave_out`. Defaults (R4): on a first release every book is `include`; on a later release every released book is `carry_forward`, changed or not, and every new book is `leave_out`. Open Bible Stories projects have no selection.
+For selection, `release.plan` groups books as `new` (unreleased), `changed_released`, `unchanged` (released and identical), `deleted_from_branch` (released, its file gone from the default branch; carried forward or left out, never included, #190), and `unknown`, and gives each book a selection state: `include`, `carry_forward`, or `leave_out`. Defaults (R4): on a first release every book is `include`; on a later release every released book is `carry_forward`, changed or not, and every new book is `leave_out`. Open Bible Stories projects have no selection.
 
 ## 5. Health states
 

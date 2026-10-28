@@ -28,12 +28,18 @@ export const GROUP_LABELS: Readonly<Record<CandidateGroup, string>> = {
   new: 'New',
   changed_released: 'Changed since the last release',
   unchanged: 'Unchanged',
+  deleted_from_branch: 'Deleted from the default branch',
   unknown: 'Unknown',
 };
 
-/** A new book can only be included or left out; a released one can be carried forward too. */
+/**
+ * A new book can only be included or left out; a released one can be carried forward too; a released book the default
+ * branch no longer has can be carried forward or left out, never included (#190).
+ */
 export function statesFor(book: Pick<Book, 'group'>): readonly SelectionState[] {
-  return book.group === 'new' || book.group === 'unknown' ? ['include', 'leave_out'] : ['include', 'carry_forward', 'leave_out'];
+  if (book.group === 'new' || book.group === 'unknown') return ['include', 'leave_out'];
+  if (book.group === 'deleted_from_branch') return ['carry_forward', 'leave_out'];
+  return ['include', 'carry_forward', 'leave_out'];
 }
 
 /**
@@ -42,6 +48,7 @@ export function statesFor(book: Pick<Book, 'group'>): readonly SelectionState[] 
  */
 export function unavailableReason(book: Pick<Book, 'group'>, state: SelectionState): string | null {
   if (statesFor(book).includes(state)) return null;
+  if (state === 'include') return 'not on the default branch';
   return book.group === 'unknown' ? 'not a book the last release is known to have' : 'not in the last release';
 }
 
@@ -55,18 +62,31 @@ export const ALL_BOOKS_LABELS: Readonly<Record<SelectionState, string>> = {
 /**
  * The selection with every book set to `state` where that choice applies, and every other book as it was (#191, Rich):
  * "Carry all forward" leaves a new book as it is. Leaving released books out this way removes them, as one by one does
- * (R2, R9): `removalsOf` lists them and the version must increase its first number.
+ * (R2, R9): `removalsOf` lists them and the version must increase its first number. A book outside `books`, in the
+ * stepper's other list (#190), keeps its choice: the result is the whole selection, which `release.prepare` takes.
  */
 export function selectAll(books: readonly Book[], selection: Selection, state: SelectionState): Selection {
-  return Object.fromEntries(books.map(book => [book.id, statesFor(book).includes(state) ? state : (selection[book.id] ?? book.selection)]));
+  return { ...selection, ...Object.fromEntries(books.map(book => [book.id, statesFor(book).includes(state) ? state : (selection[book.id] ?? book.selection)])) };
+}
+
+/**
+ * The books split where the decisions are (#190): new, changed, and unknown books, which the manager decides on, and the
+ * books unchanged since the last release, carried forward unless the manager opens them to leave some out. Each in the
+ * plan's order.
+ */
+export function partitionBooks<B extends Pick<Book, 'group'>>(books: readonly B[]): { decide: B[]; carried: B[] } {
+  return { decide: books.filter(book => book.group !== 'unchanged'), carried: books.filter(book => book.group === 'unchanged') };
 }
 
 /** The plan's defaults (R4): every book as the plan selected it. */
 export const selectionOf = (plan: { preview: { books: readonly Book[] } }): Selection => Object.fromEntries(plan.preview.books.map(book => [book.id, book.selection]));
 
+/** The groups of a book in the last release. */
+const RELEASED_GROUPS: readonly Book['group'][] = ['changed_released', 'unchanged', 'deleted_from_branch'];
+
 /** The released books the selection leaves out: each will be removed from this release onward (R2), and the plan and the notes name it. */
 export const removalsOf = (books: readonly Book[], selection: Selection): string[] =>
-  books.filter(book => (book.group === 'changed_released' || book.group === 'unchanged') && selection[book.id] === 'leave_out').map(book => book.id);
+  books.filter(book => RELEASED_GROUPS.includes(book.group) && selection[book.id] === 'leave_out').map(book => book.id);
 
 /** A release needs at least one book included or carried forward (R4). */
 export const canPrepare = (books: readonly Book[], selection: Selection): boolean => books.some(book => selection[book.id] !== 'leave_out');

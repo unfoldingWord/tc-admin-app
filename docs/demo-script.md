@@ -42,13 +42,13 @@ Each step: what the presenter does, the operation the interface calls, what Door
 ### 3. Select one book (S3, S4, R4)
 
 - Back on the stepper for the project. Operation: `release.plan` again; the baseline is now the promoted release.
-- Expect every book listed: book B "Changed since the last release" (book A is "Unchanged": its revision is the promoted release's) and every other "Unchanged", all "Carry forward" by default, "0 included · 27 carried forward · 0 left out". Read the three meanings beside the list.
-- Set book B to "Include". Expect "1 included · 26 carried forward · 0 left out"; the version calculated as a patch increment (R9, a revision).
+- Expect book B under "New and changed since <tag>", "Changed since the last release", "Carry forward" by default, and the other 26 closed under "Books carried forward from <tag> (26)" (book A among them: its revision is the promoted release's); "0 included · 27 carried forward · 0 left out". Read the three meanings above the list.
+- Set book B to "Include". Expect "1 included · 26 carried forward · 0 left out". "Continue to the version": the version calculated as a patch increment (R9, a revision).
 - Say what is not written: nothing, until the next step (ADR 0011).
 
 ### 4. Prepare the snapshot (R1, R2, R3)
 
-- "Prepare the snapshot". Operation: `release.prepare`.
+- "Prepare the snapshot", on the version step. Operation: `release.prepare`.
 - Expect "Written: Branch … temp-tca-release/<version> · Commit …": the branch from the promoted release's commit, one commit that uploads the included book and `metadata.json` only; "33 files in the snapshot": the 26 carried books from "the previous release", book B and the six administrative files (`LICENSE.md`, `README.md`, `metadata.json`, `ingredients/license.md`, `ingredients/scribe-settings.json`, `ingredients/versification.json`) from "the default branch" (E58). Show the branch on Door43 if asked; the default branch has no new commit (R3).
 
 ### 5. Health check (H1, H2, Q6)

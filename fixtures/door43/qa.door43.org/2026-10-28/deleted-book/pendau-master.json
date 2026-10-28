@@ -1,0 +1,26 @@
+{
+  "host": "https://qa.door43.org",
+  "dcs_version": "28.2.3+dcs.9-g2aa7fc3bbd",
+  "repository": "bahtraku/Perjanjian-Baru-Pendau",
+  "date": "2026-10-28",
+  "made_by": "Rich, on QA, to test release preparation: GEN imported, 1TI edited, 2PE's file deleted",
+  "commits_on_master": [
+    { "sha": "2e4be7674f", "date": "2026-10-28T13:08:21Z", "message": "Delete ingredients/2PE.usfm" },
+    { "sha": "613d7fc26a", "date": "2026-10-28T13:04:12Z", "message": "Update ingredients/1TI.usfm" },
+    { "sha": "7a554a7fba", "date": "2026-10-28T13:03:27Z", "message": "Import GEN from unfoldingWord/en_ueb@v0" },
+    { "sha": "2d9dbd1ee0", "date": "2026-07-21T13:42:24+09:00", "message": "update metadata" }
+  ],
+  "public_reads": {
+    "GET /repos/{owner}/{repo}/git/trees/master?recursive=1": { "ingredients/2PE.usfm": "absent", "ingredients/GEN.usfm": "present" },
+    "GET /{owner}/{repo}/raw/branch/master/metadata.json": { "ingredients/2PE.usfm": "listed" }
+  },
+  "release_page_step_1": {
+    "before (main at 74de1a1 with #191)": { "2PE": "Unknown; Carry forward disabled yet selected; Include and Leave out offered" },
+    "after (this branch)": {
+      "GEN": "New; Include, Leave out (selected); Carry forward disabled",
+      "1TI": "Changed since the last release; Carry forward selected",
+      "2PE": "Deleted from the default branch; Carry forward selected; Leave out; Include disabled, 'not on the default branch'",
+      "carried forward section": "Books carried forward from v1.2 (25)"
+    }
+  }
+}
