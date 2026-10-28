@@ -4,9 +4,10 @@
 // read, the findings of the default branch and of the latest full release are
 // listed (#146, `ProjectHealth`). The full project report
 // (`project.read`) is #25. Opened from the portfolio, it lists the project's
-// release preparations (`preparation.list`, #125): each under way with a link
-// into the stepper at it and the discard, each released with a link to its
-// release. "Add books" (or "Add stories") opens the upload screen in its
+// release preparations under way (`preparation.list`, #125), each with a link
+// into the stepper at it and the discard; finished ones are not listed, since
+// the latest full release and the outstanding pre-release are read from
+// Door43 (decided 28 October 2026 by Rich, #188). "Add books" (or "Add stories") opens the upload screen in its
 // place (#76), and "Import books" (or "Import stories") the import screen
 // (#81); either receipt carries the project report, which then replaces the
 // one shown.
@@ -20,7 +21,7 @@ import { ProjectHealth } from './ProjectHealth';
 import { withKnownClassification } from './known-report';
 import { useNow } from './use-now';
 import { coverageLabel, healthLabel, releaseHash, releaseTagHash, typeLabel } from './portfolio-labels';
-import { isActive, preparationLink, preparationVersion, withAnswer } from './preparations';
+import { activePreparations, preparationHash, preparationVersion, withAnswer } from './preparations';
 import { STATE_LABELS, canDiscard } from './release-stepper';
 import { ImportScreen } from './ImportScreen';
 import { importAction } from './import';
@@ -36,13 +37,14 @@ interface Props {
 
 const expired = (failure: unknown) => failure instanceof ApiError && failure.error.code === 'session_expired';
 
-/** The project's release preparations, newest first, each to open; one under way can be discarded after a confirmation (Q14). */
+/** The project's release preparations under way, newest first, each to continue or, after a confirmation, discard (Q14). */
 function Preparations({ project, onFailure }: { project: ProjectSummary; onFailure: (failure: unknown) => void }) {
   const { owner, repo } = project.ref;
   const [preparations, setPreparations] = useState<Preparation[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [discarded, setDiscarded] = useState<string | null>(null);
 
   useEffect(() => {
     let current = true;
@@ -63,10 +65,12 @@ function Preparations({ project, onFailure }: { project: ProjectSummary; onFailu
     setBusy(true);
     setProblem(null);
     setConfirming(null);
+    setDiscarded(null);
     try {
       const receipt = await callOperation('preparation.discard', { owner, repo, preparation_id: id });
-      // The answer replaces the listed one: the list is not read again, since Workers KV lists eventually.
+      // The answer replaces the listed one, which then leaves the list: the list is not read again, since Workers KV lists eventually.
       setPreparations(current => withAnswer(current ?? [], receipt.result));
+      setDiscarded(preparationVersion(receipt.result));
     } catch (failure) {
       if (expired(failure)) onFailure(failure);
       else setProblem(failureMessage(failure));
@@ -75,7 +79,7 @@ function Preparations({ project, onFailure }: { project: ProjectSummary; onFailu
     }
   };
 
-  const underWay = preparations?.some(isActive) ?? false;
+  const underWay = preparations ? activePreparations(preparations) : null;
   return (
     <section aria-label="Release preparations">
       <h2>Release preparations</h2>
@@ -84,41 +88,39 @@ function Preparations({ project, onFailure }: { project: ProjectSummary; onFailu
           {problem}
         </p>
       )}
-      {!preparations && !problem && <p className="muted">Reading the release preparations…</p>}
-      {preparations && !underWay && <p className="muted">No release is being prepared.</p>}
-      {preparations && preparations.length > 0 && (
+      {discarded && <p role="status">The preparation of version {discarded} is discarded.</p>}
+      {!underWay && !problem && <p className="muted">Reading the release preparations…</p>}
+      {underWay && underWay.length === 0 && <p className="muted">No release is being prepared.</p>}
+      {underWay && underWay.length > 0 && (
         <ul aria-label="Release preparations of this project">
-          {preparations.map(preparation => {
-            const link = preparationLink(project, preparation);
-            return (
-              <li key={preparation.id} className="actions">
-                <span>
-                  Version {preparationVersion(preparation)} · {STATE_LABELS[preparation.state]}
-                  {preparation.history.at(-1) && <span className="muted"> · last changed {new Date(preparation.history.at(-1)!.at).toLocaleString()}</span>}
-                </span>
-                {link && <a href={link}>{isActive(preparation) ? 'Continue the preparation' : 'Open the release'}</a>}
-                {canDiscard(preparation) &&
-                  (confirming === preparation.id ? (
-                    <>
-                      <span>Discard this preparation? The temporary branch is deleted; the default branch is untouched.</span>
-                      <button type="button" onClick={() => void discard(preparation.id)} disabled={busy}>
-                        Discard the preparation
-                      </button>
-                      <button type="button" className="secondary" onClick={() => setConfirming(null)}>
-                        Keep it
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" className="secondary" onClick={() => setConfirming(preparation.id)} disabled={busy}>
+          {underWay.map(preparation => (
+            <li key={preparation.id} className="actions">
+              <span>
+                Version {preparationVersion(preparation)} · {STATE_LABELS[preparation.state]}
+                {preparation.history.at(-1) && <span className="muted"> · last changed {new Date(preparation.history.at(-1)!.at).toLocaleString()}</span>}
+              </span>
+              <a href={preparationHash(project, preparation.id)}>Continue the preparation</a>
+              {canDiscard(preparation) &&
+                (confirming === preparation.id ? (
+                  <>
+                    <span>Discard this preparation? The temporary branch is deleted; the default branch is untouched.</span>
+                    <button type="button" onClick={() => void discard(preparation.id)} disabled={busy}>
                       Discard the preparation
                     </button>
-                  ))}
-              </li>
-            );
-          })}
+                    <button type="button" className="secondary" onClick={() => setConfirming(null)}>
+                      Keep it
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" className="secondary" onClick={() => setConfirming(preparation.id)} disabled={busy}>
+                    Discard the preparation
+                  </button>
+                ))}
+            </li>
+          ))}
         </ul>
       )}
-      {preparations && <p className="muted">A preparation made a moment ago may not be listed yet.</p>}
+      {underWay && <p className="muted">A preparation made a moment ago may not be listed yet.</p>}
     </section>
   );
 }

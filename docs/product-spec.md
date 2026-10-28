@@ -236,6 +236,8 @@ The candidate is discarded and the stepper restarts from selection.
 
 A manager may also discard an unreleased preparation. tC Admin asks for confirmation, deletes the temporary branch, and marks the preparation discarded. A preparation that has been released cannot be discarded (decided 22 September 2026, Q14).
 
+A project's page lists its preparations under way, each to continue or discard. A finished one, released or discarded, is not listed there: the page shows the latest full release and any outstanding pre-release as Door43 has them. A release opened by its tag that Door43 no longer has, but that tC Admin recorded making, is named as such, with the date tC Admin made it (decided 28 October 2026 by Rich, #188).
+
 ### Versioning
 
 - The baseline is the latest full release on Door43, whichever tool created it.

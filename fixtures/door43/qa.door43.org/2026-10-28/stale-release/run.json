@@ -1,0 +1,45 @@
+{
+  "host": "https://qa.door43.org",
+  "dcs_version": "28.2.3+dcs.9-g2aa7fc3bbd",
+  "worker": "local wrangler dev at http://127.0.0.1:8787 (Wrangler 4.146.0), PLANS and SESSIONS local, on branch claude/stale-release-188",
+  "project": "tc-admin-qa-org/id_seedtb",
+  "date": "2026-10-28",
+  "steps": [
+    {
+      "step": "discard the preparation v1.1.2 the local store kept from 8 October 2026 (Ready for release); its branch temp-tca-release/v1.1.2 was gone on QA",
+      "project_page": "The preparation of version v1.1.2 is discarded. / No release is being prepared."
+    },
+    {
+      "step": "prepare and create the full release v1.0.1 through the stepper (defaults: MAT and MRK carried forward, JHN left out)",
+      "wrote": "Branch tc-admin-qa-org/id_seedtb@temp-tca-release/v1.0.1 · Commit 269b0e1c · Tag v1.0.1 · Release v1.0.1",
+      "health": "Healthy",
+      "state": "Full release created · version v1.0.1"
+    },
+    {
+      "step": "before: the release page and the project page",
+      "release_page": "Tag v1.0.1 · Status Full release · Commit 269b0e1c95 · On Door43 https://qa.door43.org/tc-admin-qa-org/id_seedtb/releases/tag/v1.0.1",
+      "project_page": "Latest release v1.0.1 · Release preparations: No release is being prepared."
+    },
+    {
+      "step": "delete the release and its tag on QA with TEST_TOKEN (approved by Rich)",
+      "door43": {
+        "GET /repos/tc-admin-qa-org/id_seedtb/releases/tags/v1.0.1": 200,
+        "DELETE /repos/tc-admin-qa-org/id_seedtb/releases/10987930": 204,
+        "DELETE /repos/tc-admin-qa-org/id_seedtb/tags/v1.0.1": 204,
+        "GET /repos/tc-admin-qa-org/id_seedtb/releases/tags/v1.0.1 (after)": 404
+      }
+    },
+    {
+      "step": "after: the release page of v1.0.1, of a tag never made, and the project page",
+      "release_page_v1.0.1": "tC Admin made the full release v1.0.1 on 10/28/2026. Door43 no longer has it: it may have been deleted on Door43.",
+      "release_page_v9.9.9": "Door43 has no release under the tag v9.9.9 for this project.",
+      "project_page": "Latest release v1.0.0 · Open the release / Pre-release v1.1.0 · Open the pre-release / Release preparations: No release is being prepared."
+    },
+    {
+      "step": "QA afterwards, public reads",
+      "branches": ["main"],
+      "tags": ["v1.1.0", "v1.0.0"],
+      "releases": [["v1.1.0", "pre-release"], ["v1.0.0", "full release"]]
+    }
+  ]
+}

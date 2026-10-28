@@ -89,6 +89,7 @@ Keep this file current: an issue's Traceability section and its row here say the
 | [#156](https://github.com/unfoldingWord/tc-admin-app/issues/156) Open the latest release from the project page | §10 | — | R8 | E57 | `project.read` (display), `release.lookup` | web/ProjectView | S7 |
 | [#161](https://github.com/unfoldingWord/tc-admin-app/issues/161) Polish what the demo walkthrough found | §6, §8, §10 | — | R9, H4 | — | `release.create`, `release.promote`, `project.create.plan`, `project.create.apply`, `import.plan` (display) | model/notes, web (ReleaseStepper, CreateProject, ImportScreen, UploadScreen, HealthFindings) | S4, S7 |
 | [#162](https://github.com/unfoldingWord/tc-admin-app/issues/162) Show a project's outstanding pre-release on its page | §10 | — | R8 | E14, E57, E75 | `project.read`, `project.refresh` | door43/catalog, operations/project-read, shared/schema, web/ProjectView | S7 |
+| [#188](https://github.com/unfoldingWord/tc-admin-app/issues/188) Tell a release Door43 no longer has from one it has, and finished preparations from those under way | §10 | 0011 | P3, R6, R7, A2 | E87, E88, E82, E58 | `preparation.list`, `release.lookup` | web/ProjectView, web/ReleaseView, web/preparations | S6, S7 |
 
 ### EPIC: Add books: upload and import ([#45](https://github.com/unfoldingWord-box3/tc-admin-app/issues/45), [#47](https://github.com/unfoldingWord-box3/tc-admin-app/issues/47))
 

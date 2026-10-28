@@ -1,13 +1,14 @@
 // Finding a release preparation again (#125): which listed preparations are
 // under way, their words, a preparation's own address and how it reads back,
-// the preparation a `preparation_active` refusal names, and a stepper that did
-// not make a preparation finding it from the list and a read.
+// the preparation a `preparation_active` refusal names, a stepper that did not
+// make a preparation finding it from the list and a read, and what the list
+// records of making a release Door43 no longer has (#188).
 import { PREPARATION_STATES, Preparation } from '@tc-admin/shared/schema';
 import type { OperationErrorShape } from '@tc-admin/shared/schema';
 import { describe, expect, test } from 'vitest';
 import { ApiError, callOperation } from '../src/api/client';
 import { hashRef, releaseHash } from '../src/portfolio-labels';
-import { ACTIVE_STATES, FINISHED_STATES, activePreparations, activeSummary, isActive, preparationHash, preparationLink, preparationVersion, refusedFor, withAnswer } from '../src/preparations';
+import { ACTIVE_STATES, FINISHED_STATES, activePreparations, activeSummary, isActive, madeRelease, madeReleaseSentence, preparationHash, preparationVersion, refusedFor, withAnswer } from '../src/preparations';
 import { STATE_LABELS, canDiscard, discardOnly, releaseGate, stepOf } from '../src/release-stepper';
 
 const project = { ref: { owner: 'tc-admin-qa-org', repo: 'id_obs1948', id: 1, url: 'https://qa.door43.org/tc-admin-qa-org/id_obs1948' } };
@@ -51,12 +52,6 @@ describe('preparations under way and finished (domain model §6)', () => {
     expect(preparationVersion(stored('v1.1.0', 'retryable_failure', { version: { baseline_tag: 'v1.0.0', proposed: 'v1.1.0', confirmed: 'v1.2.0' } }))).toBe('v1.2.0');
     expect(preparationVersion(stored('v1.1.0', 'selecting', { version: { baseline_tag: null, proposed: 'v1.1.0', confirmed: null } }))).toBe('v1.1.0');
     for (const state of ACTIVE_STATES) expect(STATE_LABELS[state]).toBeTruthy();
-  });
-
-  test('a listed preparation leads to the stepper at it while under way, to its release once released, and nowhere once discarded', () => {
-    expect(preparationLink(project, stored('v1.1.0', 'ready_for_release'))).toBe('#/tc-admin-qa-org/id_obs1948/release/v1.1.0');
-    expect(preparationLink(project, stored('v1.1.0', 'pre_release', { release: { tag: 'v1.1.0', url: 'u', prerelease: true } }))).toBe('#/tc-admin-qa-org/id_obs1948/releases/v1.1.0');
-    expect(preparationLink(project, stored('v1.1.0', 'discarded'))).toBeNull();
   });
 
   test('a discard\'s answer replaces the listed preparation, which then leaves the ones under way', () => {
@@ -139,5 +134,63 @@ describe('continuing a preparation this page did not make (#125)', () => {
     }
     expect(discardOnly(failed('release_failed'))).toBe(false);
     expect(discardOnly({ state: 'ready_for_release', last_error: { code: 'commit_failed' } })).toBe(false);
+  });
+});
+
+describe('a release tC Admin made and Door43 no longer has (#188, E87)', () => {
+  const released = (id: string, tag: string, history: Preparation['history'], state: Preparation['state'] = 'full_release') =>
+    stored(id, state, { release: { tag, url: `https://qa.door43.org/${project.ref.owner}/${project.ref.repo}/releases/tag/${tag}`, prerelease: state === 'pre_release' }, history });
+  const day = (at: string) => at.slice(0, 10);
+
+  test('P3: a full release is named with the day its preparation recorded making it', () => {
+    const listed = [
+      stored('v2.1.0', 'health_blocked'),
+      released('v2.0.0', 'v2.0.0', [
+        { at: '2026-10-07T20:10:00.000Z', from: 'snapshot_prepared', to: 'ready_for_release', event: 'health read' },
+        { at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release', to: 'full_release', event: 'release.create' },
+      ]),
+    ];
+    const made = madeRelease(listed, 'v2.0.0');
+    expect(made).toEqual({ tag: 'v2.0.0', prerelease: false, made_at: '2026-10-07T20:18:00.000Z', found: false, promoted_at: null, promotion_found: false });
+    expect(madeReleaseSentence(made!, day)).toBe('tC Admin made the full release v2.0.0 on 2026-10-07. Door43 no longer has it: it may have been deleted on Door43.');
+  });
+
+  test('P3: a pre-release names the day it was made, and the day it was promoted when it was', () => {
+    const made = [
+      { at: '2026-10-07T20:15:00.000Z', from: 'ready_for_release' as const, to: 'pre_release' as const, event: 'release.create' },
+    ];
+    const promoted = [...made, { at: '2026-10-09T08:00:00.000Z', from: 'pre_release' as const, to: 'full_release' as const, event: 'release.promote' }];
+    expect(madeReleaseSentence(madeRelease([released('v1.1.1', 'v1.1.1', made, 'pre_release')], 'v1.1.1')!, day)).toBe('tC Admin made the pre-release v1.1.1 on 2026-10-07. Door43 no longer has it: it may have been deleted on Door43.');
+    expect(madeReleaseSentence(madeRelease([released('v1.1.1', 'v1.1.1', promoted)], 'v1.1.1')!, day)).toBe(
+      'tC Admin made the pre-release v1.1.1 on 2026-10-07 and promoted it to a full release on 2026-10-09. Door43 no longer has it: it may have been deleted on Door43.',
+    );
+  });
+
+  test('P3: a release recorded when tC Admin found it already on Door43 is dated as recorded, not as made (bench round 1 on #197)', () => {
+    // The events release-create.ts writes when the lookup after a lost answer, or a refusal because the release existed, finds it (R6).
+    for (const event of ['release.lookup found the release of the unconfirmed attempt', 'release.create: Door43 had the release already']) {
+      const history: Preparation['history'] = [{ at: '2026-10-08T09:00:00.000Z', from: 'retryable_failure', to: 'full_release', event }];
+      const made = madeRelease([released('v2.0.0', 'v2.0.0', history)], 'v2.0.0')!;
+      expect(made.found, event).toBe(true);
+      expect(madeReleaseSentence(made, day)).toBe('tC Admin recorded the full release v2.0.0 on 2026-10-08, when it found the release already on Door43. Door43 no longer has it: it may have been deleted on Door43.');
+    }
+    const acknowledged: Preparation['history'] = [{ at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release', to: 'full_release', event: 'release.create, warnings acknowledged' }];
+    expect(madeRelease([released('v2.0.0', 'v2.0.0', acknowledged)], 'v2.0.0')?.found).toBe(false);
+    // A promotion whose answer was lost is recorded when Door43 is found to show the release full (release-promote.ts).
+    const promotedFound: Preparation['history'] = [
+      { at: '2026-10-07T20:15:00.000Z', from: 'ready_for_release', to: 'pre_release', event: 'release.create' },
+      { at: '2026-10-09T08:00:00.000Z', from: 'pre_release', to: 'full_release', event: 'release.promote, already full on Door43' },
+    ];
+    expect(madeReleaseSentence(madeRelease([released('v1.1.1', 'v1.1.1', promotedFound)], 'v1.1.1')!, day)).toBe(
+      'tC Admin made the pre-release v1.1.1 on 2026-10-07, and recorded its promotion to a full release on 2026-10-09. Door43 no longer has it: it may have been deleted on Door43.',
+    );
+  });
+
+  test('P3: the release is found by its tag, which may be above the preparation id (R9); a preparation under way, discarded, or under another tag records none', () => {
+    const history: Preparation['history'] = [{ at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release', to: 'full_release', event: 'release.create' }];
+    expect(madeRelease([released('v1.1.0', 'v2.0.0', history)], 'v2.0.0')?.made_at).toBe('2026-10-07T20:18:00.000Z');
+    expect(madeRelease([released('v1.1.0', 'v2.0.0', history)], 'v1.1.0')).toBeNull();
+    expect(madeRelease([stored('v2.0.0', 'ready_for_release'), stored('v2.0.0', 'discarded')], 'v2.0.0')).toBeNull();
+    expect(madeRelease([], 'v2.0.0')).toBeNull();
   });
 });
