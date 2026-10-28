@@ -2,8 +2,9 @@
 // (product spec §6, #28): the owner it starts with, the form and its defaults,
 // the plan input it sends, which field a failure belongs to (X2), the
 // language search over `language.list` (Q20), the words for the translation
-// details and the writes, and the retry of a first commit when the setup is
-// incomplete (#31, Q29). The Worker owns every rule; what is
+// details and the writes, the plan's metadata in plain words for its review
+// (#193), and the retry of a first commit when the setup is incomplete (#31,
+// Q29). The Worker owns every rule; what is
 // mirrored here is for feedback before a plan is asked for (invariants.md).
 
 import {
@@ -13,6 +14,7 @@ import {
   TEXT_TRANSLATION_TYPES,
 } from '@tc-admin/shared/schema';
 import type { OperationErrorShape, OperationInput, OperationOutput, ProjectSummary, WriteKind } from '@tc-admin/shared/schema';
+import { BOOKS } from './upload';
 
 export type Language = OperationOutput<'language.list'>['languages'][number];
 export type CreatableType = 'bible' | 'obs';
@@ -248,6 +250,76 @@ export const DETAIL_VALUE_LABELS: { readonly [Key in keyof TranslationDetails]: 
 
 /** The one license this version offers (Q20). */
 export const LICENSE_LABEL = 'CC BY-SA 4.0';
+
+/** One value the new project's `metadata.json` will hold, in plain words, for the review before creating (#193). */
+export interface MetadataFact {
+  label: string;
+  value: string;
+}
+
+const NOT_STATED = 'Not stated';
+const entries = (value: unknown): Record<string, unknown> => (value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {});
+const text = (value: unknown): string | null => (typeof value === 'string' && value.trim() ? value : null);
+/** A localized string in the metadata's default language, else in its first language. */
+const localized = (value: unknown, locale: string | null): string | null => {
+  const strings = entries(value);
+  return (locale ? text(strings[locale]) : null) ?? Object.values(strings).map(text).find(Boolean) ?? null;
+};
+/** A schema value in plain words, or the value itself when it has none. */
+const worded = (labels: Readonly<Record<string, string>>, value: unknown): string => {
+  const raw = text(value);
+  return raw ? (labels[raw] ?? raw) : NOT_STATED;
+};
+
+const OLD_TESTAMENT = BOOKS.slice(0, 39);
+const NEW_TESTAMENT = BOOKS.slice(39);
+
+/** A Bible's scope in words: a whole testament or both by its label, any other set of books by its count. */
+function bibleScope(scope: Record<string, unknown>): string {
+  const books = new Set(Object.keys(scope).map(book => book.toLowerCase()));
+  const exactly = (list: readonly string[]) => books.size === list.length && list.every(book => books.has(book));
+  if (exactly(BOOKS)) return TESTAMENT_SCOPE_LABELS.full;
+  if (exactly(NEW_TESTAMENT)) return TESTAMENT_SCOPE_LABELS.nt;
+  if (exactly(OLD_TESTAMENT)) return TESTAMENT_SCOPE_LABELS.ot;
+  return books.size === 0 ? NOT_STATED : `${books.size} ${books.size === 1 ? 'book' : 'books'}`;
+}
+
+/**
+ * What a creation plan's `metadata.json` says about the new project, in glossary words (#193): read from the plan, so it
+ * is what will be written, not what the form held. A value the metadata does not carry reads "Not stated".
+ */
+export function metadataFacts(metadata: Record<string, unknown>): MetadataFact[] {
+  const meta = entries(metadata.meta);
+  const locale = text(meta.defaultLocale);
+  const identification = entries(metadata.identification);
+  const language = entries(Array.isArray(metadata.languages) ? metadata.languages[0] : undefined);
+  const flavorType = entries(entries(metadata.type).flavorType);
+  const flavor = entries(flavorType.flavor);
+  const scope = entries(flavorType.currentScope);
+  const licenses = Array.isArray(entries(metadata.copyright).licenses) ? (entries(metadata.copyright).licenses as unknown[]) : [];
+  const license = licenses.map(entry => text(entries(entry).ingredient)).find(Boolean);
+  const generator = entries(meta.generator);
+
+  const languageWords = [localized(language.name, locale), text(language.tag), language.scriptDirection === 'rtl' ? 'right to left' : null].filter(Boolean).join(' · ');
+  const facts: MetadataFact[] = [
+    { label: 'Title', value: localized(identification.name, locale) ?? NOT_STATED },
+    { label: 'Abbreviation', value: localized(identification.abbreviation, locale) ?? NOT_STATED },
+    { label: 'Language', value: languageWords || NOT_STATED },
+    { label: 'Project type', value: worded({ textTranslation: 'Bible', textStories: 'Open Bible Stories' }, flavor.name) },
+  ];
+  if (flavor.name === 'textTranslation') {
+    facts.push({ label: 'Testament scope', value: bibleScope(scope) });
+    for (const key of ['projectType', 'translationType', 'audience'] as const) facts.push({ label: DETAIL_LABELS[key], value: worded(DETAIL_VALUE_LABELS[key], flavor[key]) });
+  } else if (flavor.name === 'textStories') {
+    const books = Object.keys(scope).length;
+    facts.push({ label: 'Scope', value: books ? `The Bible passages the stories draw on, in ${books} ${books === 1 ? 'book' : 'books'}` : NOT_STATED });
+  }
+  facts.push({ label: 'License', value: license ? `${LICENSE_LABEL}, in ${license}` : NOT_STATED });
+  const software = [text(generator.softwareName), text(generator.softwareVersion)].filter(Boolean).join(' ');
+  const account = text(generator.userName);
+  facts.push({ label: 'Made with', value: software ? (account ? `${software}, by ${account}` : software) : NOT_STATED });
+  return facts;
+}
 
 /** A plan's `would_write` entry in words: what kind of Door43 write, and where. */
 export const WRITE_LABELS: Readonly<Record<WriteKind, string>> = { repo: 'Repository', branch: 'Branch', commit: 'Commit', tag: 'Tag', release: 'Release' };
