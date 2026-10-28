@@ -270,8 +270,9 @@ export function retireCreated(organizations: Organizations, created: ProjectSumm
  * The portfolio with a project just created shown in its owner's group, since
  * Door43's catalog lists a new repository a few seconds after it is created (E28,
  * E45), so the project appears in the portfolio at once (S1). A project the
- * portfolio already lists is not added twice; a new group for an organization goes
- * before the account's own, which the portfolio lists last.
+ * portfolio already lists is not added twice; a new group for the account's own
+ * goes first, and one for an organization among the organizations by name, as the
+ * portfolio orders them (#195).
  */
 export function withCreated(organizations: Organizations, created: ProjectSummary | null, accountLogin: string): Organizations {
   if (!created || isListed(organizations, created)) return organizations;
@@ -280,9 +281,9 @@ export function withCreated(organizations: Organizations, created: ProjectSummar
     return organizations.map(entry => (entry === group ? { ...entry, projects: [...entry.projects, created].sort((a, b) => byName(a.ref.repo, b.ref.repo)) } : entry));
   }
   const added = { name: created.ref.owner, projects: [created] };
-  const ownIndex = organizations.findIndex(entry => sameLogin(entry.name, accountLogin));
-  if (sameLogin(created.ref.owner, accountLogin) || ownIndex < 0) return [...organizations, added];
-  return [...organizations.slice(0, ownIndex), added, ...organizations.slice(ownIndex)];
+  if (sameLogin(created.ref.owner, accountLogin)) return [added, ...organizations];
+  const after = organizations.findIndex(entry => !sameLogin(entry.name, accountLogin) && byName(entry.name, created.ref.owner) > 0);
+  return after < 0 ? [...organizations, added] : [...organizations.slice(0, after), added, ...organizations.slice(after)];
 }
 
 type Receipt = OperationOutput<'project.create.apply'>;

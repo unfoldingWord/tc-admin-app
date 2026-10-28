@@ -4,10 +4,13 @@
 // browser over the portfolio already read (operations.md `portfolio.list`:
 // "filters are applied by the client where the whole portfolio is already
 // loaded"), so a change of filter reads nothing from Door43. The grouping
-// itself, the account's organizations first and its own account last, is the
-// Worker's and is kept. Pure, but for the remembered choice, which is a
-// per-viewer convenience (architecture §4 "user display preferences") kept in
-// this browser's `localStorage`, guarded so a refusing browser just forgets it.
+// itself, the account's own account first and then its organizations (#195),
+// is the Worker's and is kept. Each owner group can be collapsed (#195); a
+// collapsed group still shows its name and how many projects it holds, so no
+// writable project is out of reach (P1). Pure, but for the remembered choices,
+// the order and the collapsed owners, per-viewer conveniences (architecture §4
+// "user display preferences") kept in this browser's `localStorage`, guarded
+// so a refusing browser just forgets them.
 
 import type { HealthState, ProjectSummary, ProjectType } from '@tc-admin/shared/schema';
 
@@ -89,7 +92,39 @@ export const goneLabel = (label: string): string => `${label} · none in the lis
 /** Whether any filter narrows the list. */
 export const filtered = (view: PortfolioView): boolean => view.organization !== null || view.language !== null || view.project_type !== null || view.health !== null;
 
+/** An owner group's count, said beside its name whether it is open or collapsed (#195). */
+export const groupCount = (count: number): string => `${count} ${count === 1 ? 'project' : 'projects'}`;
+
+/** The collapsed owners with `owner` collapsed or opened; owners are compared without case, as Door43 compares logins. */
+export function withCollapsed(collapsed: ReadonlySet<string>, owner: string, collapse: boolean): Set<string> {
+  const next = new Set(collapsed);
+  if (collapse) next.add(owner.toLowerCase());
+  else next.delete(owner.toLowerCase());
+  return next;
+}
+
+export const isCollapsed = (collapsed: ReadonlySet<string>, owner: string): boolean => collapsed.has(owner.toLowerCase());
+
 const VIEW_KEY = 'tca:portfolio-view';
+const COLLAPSED_KEY = 'tca:portfolio-collapsed';
+
+/** The owners this browser last collapsed (#195, Rich: remembered as the order is); none when nothing is kept, or what is kept is not a list of names. */
+export function rememberedCollapsed(): Set<string> {
+  try {
+    const kept: unknown = JSON.parse(window.localStorage.getItem(COLLAPSED_KEY) ?? '[]');
+    return new Set(Array.isArray(kept) ? kept.filter((name): name is string => typeof name === 'string').map(name => name.toLowerCase()) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function rememberCollapsed(collapsed: ReadonlySet<string>): void {
+  try {
+    window.localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...collapsed].sort()));
+  } catch {
+    // A refusing browser forgets which owners were collapsed.
+  }
+}
 const SORTS: readonly string[] = ['name', 'language', 'activity'];
 
 /** The view this browser last chose; the default when none, or when what is kept is not a view. Filters are not kept, only the order: a filter left on would hide projects next time. */

@@ -60,6 +60,7 @@ Keep this file current: an issue's Traceability section and its row here say the
 | [#124](https://github.com/unfoldingWord-box3/tc-admin-app/issues/124) Health findings display | §9, §10 | — | H1, H2, H4 | E16, E60, E65 | `preparation.read` (display only) | web/HealthFindings, web/health-findings, web/door43-text, web/ReleaseStepper | S6 |
 | [#146](https://github.com/unfoldingWord/tc-admin-app/issues/146) A project's health findings, for its default branch and latest release | §5, §9 | 0007 | H1, H3, H4 | E15, E28, E71, Q35 | `project.read`, `project.refresh` | operations/project-read, web/ProjectHealth, web/HealthFindings, web/ProjectView | — |
 | [#149](https://github.com/unfoldingWord/tc-admin-app/issues/149) Collapse the project's health check, with findings grouped by check | §5, §9 | 0007 | H1, H3, H4 | E15, E71, E72, Q35 | `project.read` (display only) | web/ProjectHealth, web/HealthFindings, web/health-findings, web/ProjectView | — |
+| [#195](https://github.com/unfoldingWord/tc-admin-app/issues/195) Let the manager collapse each owner's projects in the portfolio, and say what an unsupported project is | §2, §5 | 0014 | P1, H4 | — | `portfolio.list` (the account's own group first) | operations/portfolio-list, web/Portfolio, web/portfolio-view, web/create-project | — |
 
 ### EPIC: Create a project ([#32](https://github.com/unfoldingWord-box3/tc-admin-app/issues/32))
 

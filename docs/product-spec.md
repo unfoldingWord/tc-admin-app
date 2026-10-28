@@ -20,7 +20,7 @@ Bible translation team leaders and project managers who are responsible for the 
 
 - Authentication uses Door43 OAuth.
 - Door43 organization and repository permissions are authoritative.
-- The portfolio includes every owner where the current user has write access: their organizations first, then their own account.
+- The portfolio includes every owner where the current user has write access: their own account first, then their organizations (decided 28 October 2026 by Rich, #195; it was organizations first).
 - Repositories that are read-only to the user are not shown in the normal portfolio.
 - Only Scripture Burrito Bible and Open Bible Stories repositories are projects, and by default the portfolio lists only those (ADR 0014). With "Show all projects", a writable repository in Resource Container, translationStudio, or translationCore format, with no recognized metadata, or of any other type is listed as unsupported with the reason (ADR 0013). For a Bible or Open Bible Stories repository in another format, the reason offers an import into a new project.
 - tC Admin must re-check authorization before mutations and releases; a stale screen must not grant access.
@@ -49,7 +49,8 @@ Bible translation team leaders and project managers who are responsible for the 
 
 ### Organization and repository display
 
-- Group projects by owner as the primary hierarchy: the manager's organizations first, then their own account.
+- Group projects by owner as the primary hierarchy: the manager's own account first, then their organizations by name (#195). Each owner's group can be collapsed, so a manager can fold away the owners they are not working in; a collapsed group still shows its name and how many projects it holds (P1), and the browser remembers which groups are collapsed (decided 28 October 2026 by Rich and Birch, #195).
+- Beside "Show all projects", say what tC Admin manages: Bible and Open Bible Stories projects in Scripture Burrito; other writable projects are listed as unsupported (#195).
 - Allow configurable secondary ordering, including most recent activity or language.
 - Provide filters for organization, language, project type, and health state.
 - Analyze projects asynchronously and show the project immediately with a loading state.

@@ -4,7 +4,7 @@
 // with no date last; the owner grouping is the Worker's and is kept.
 import { describe, expect, test } from 'vitest';
 import type { ProjectSummary } from '@tc-admin/shared/schema';
-import { DEFAULT_VIEW, applyView, filterChoices, filtered, goneChoice, goneLabel } from '../src/portfolio-view';
+import { DEFAULT_VIEW, applyView, filterChoices, filtered, goneChoice, goneLabel, groupCount, isCollapsed, rememberedCollapsed, withCollapsed } from '../src/portfolio-view';
 import { projectOf } from './support/mounted';
 
 const with_ = (project: ProjectSummary, patch: Partial<ProjectSummary>): ProjectSummary => ({ ...project, ...patch });
@@ -65,5 +65,19 @@ describe('a filter whose value the list no longer holds', () => {
     expect(goneChoice(['id'], 'ums')).toBe('ums');
     expect(goneChoice(['id'], null)).toBeNull();
     expect(goneLabel('Pendau')).toBe('Pendau · none in the list now');
+  });
+});
+
+describe('collapsed owner groups (#195)', () => {
+  test('P1: an owner is collapsed and opened again by name, whatever its case, and a collapsed group still says how many projects it holds', () => {
+    const collapsed = withCollapsed(new Set(), 'BahtraKu', true);
+    expect(isCollapsed(collapsed, 'bahtraku')).toBe(true);
+    expect(isCollapsed(collapsed, 'tc-admin-qa')).toBe(false);
+    expect(isCollapsed(withCollapsed(collapsed, 'bahtraku', false), 'BahtraKu')).toBe(false);
+    expect([groupCount(1), groupCount(3)]).toEqual(['1 project', '3 projects']);
+  });
+
+  test('P1: with no browser storage (Node), nothing is collapsed', () => {
+    expect([...rememberedCollapsed()]).toEqual([]);
   });
 });

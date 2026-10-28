@@ -12,7 +12,10 @@
 // from Door43 again. "Refresh" reads the portfolio from Door43 again, and its
 // age is labeled (P3, #26). Filters by organization, language, project type,
 // and health, and the order within each owner group, apply in the browser over
-// the list already read (#24).
+// the list already read (#24). Each owner group can be collapsed, and this
+// browser remembers which; a collapsed group shows its name and its count, so
+// nothing writable is out of reach (P1, #195). Beside "Show all projects" a
+// sentence says what tC Admin supports, so "unsupported" is explained (#195).
 
 import { useEffect, useRef, useState } from 'react';
 import { catalogMessage } from '@tc-admin/shared/schema';
@@ -26,7 +29,7 @@ import { ReleaseView } from './ReleaseView';
 import { EDITABILITY_LABELS } from './labels';
 import { freshnessLabel } from './freshness';
 import { useNow } from './use-now';
-import { SORT_LABELS, applyView, filterChoices, filtered, goneChoice, goneLabel, rememberView, rememberedView } from './portfolio-view';
+import { SORT_LABELS, applyView, filterChoices, filtered, goneChoice, goneLabel, groupCount, isCollapsed, rememberCollapsed, rememberView, rememberedCollapsed, rememberedView, withCollapsed } from './portfolio-view';
 import type { PortfolioView, SortOrder } from './portfolio-view';
 import { ageLabel } from './freshness';
 import { canOpen, coverageLabel, formatLabel, hashRef, healthLabel, projectHash, typeLabel } from './portfolio-labels';
@@ -62,6 +65,14 @@ export function Portfolio({ account, onFailure }: Props) {
     setView(previous => {
       const next = { ...previous, ...patch };
       rememberView(next);
+      return next;
+    });
+  // The owners whose groups are collapsed, remembered by this browser (#195).
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(rememberedCollapsed);
+  const toggle = (owner: string) =>
+    setCollapsed(previous => {
+      const next = withCollapsed(previous, owner, !isCollapsed(previous, owner));
+      rememberCollapsed(next);
       return next;
     });
   // The projects the Worker refused for permission since this portfolio was opened: dropped from the list (A2, #14).
@@ -145,10 +156,15 @@ export function Portfolio({ account, onFailure }: Props) {
     <>
       <h1>Your projects</h1>
       <div className="toolbar">
-        <label className="show-all">
-          <input type="checkbox" checked={show === 'all'} onChange={event => setShow(event.target.checked ? 'all' : 'supported')} /> Show all projects,
-          including unsupported ones
-        </label>
+        <div>
+          <label className="show-all">
+            <input type="checkbox" checked={show === 'all'} onChange={event => setShow(event.target.checked ? 'all' : 'supported')} aria-describedby="show-all-help" /> Show all projects,
+            including unsupported ones
+          </label>
+          <p id="show-all-help" className="muted show-all-help">
+            tC Admin manages Bible and Open Bible Stories projects in Scripture Burrito. Other projects you can write to are listed as unsupported.
+          </p>
+        </div>
         <a className="button" href={CREATE_HASH}>
           Create a project
         </a>
@@ -177,16 +193,31 @@ export function Portfolio({ account, onFailure }: Props) {
         </p>
       )}
       {portfolio &&
-        shown.map(group => (
-          <section key={group.name} className="owner">
-            <h2>{group.name}</h2>
-            <ul className="projects">
-              {group.projects.map(project => (
-                <ProjectRow key={project.ref.id} project={project} now={now} />
-              ))}
-            </ul>
-          </section>
-        ))}
+        shown.map(group => {
+          const folded = isCollapsed(collapsed, group.name);
+          const listId = `owner-${group.name.toLowerCase()}`;
+          return (
+            <section key={group.name} className="owner" aria-label={group.name}>
+              {/* The heading's button folds the group; folded, its name and count stay (P1, #195). */}
+              <div className="owner-heading">
+                <h2>
+                  <button type="button" className="owner-toggle" aria-expanded={!folded} aria-controls={listId} onClick={() => toggle(group.name)}>
+                    <span aria-hidden="true" className="owner-chevron">
+                      {folded ? '▸' : '▾'}
+                    </span>
+                    {group.name}
+                  </button>
+                </h2>
+                <span className="muted">{groupCount(group.projects.length)}</span>
+              </div>
+              <ul className="projects" id={listId} hidden={folded}>
+                {group.projects.map(project => (
+                  <ProjectRow key={project.ref.id} project={project} now={now} />
+                ))}
+              </ul>
+            </section>
+          );
+        })}
       {portfolio && (
         <p className="freshness actions">
           <span>{freshnessLabel(portfolio.freshness, now)}</span>

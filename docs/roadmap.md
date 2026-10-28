@@ -47,7 +47,7 @@ Recorded in [CONTEXT.md](../CONTEXT.md) and the [ADRs](adr). The ones that shape
 
 ### What a manager can do at the end
 
-1. Sign in with Door43 and see every writable repository grouped by owner, their organizations first, with coverage and health.
+1. Sign in with Door43 and see every writable repository grouped by owner, their own account first (#195; organizations first until 28 October 2026), with coverage and health.
 2. Create a new Bible or Open Bible Stories project from a title, an abbreviation, and a language, with valid Scripture Burrito metadata and no editor required.
 3. Add books or stories by uploading USFM or markdown files, or by importing them from any repository in the Door43 catalog, in any format.
 4. Set each book to include, carry forward, or leave out, watch tC Admin assemble a snapshot, wait for Door43's health result, review generated release notes and the calculated version, create a pre-release, and promote it later.

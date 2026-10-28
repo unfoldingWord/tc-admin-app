@@ -234,18 +234,19 @@ describe('the project just created in the portfolio (S1)', () => {
     permissions: { push: true, admin: true, checked_at: '' },
   });
   const portfolio = [
-    { name: 'bahtraku', projects: [summary('bahtraku', 'id_tb1'), summary('bahtraku', 'ums_pb')] },
     { name: 'tc-admin-qa', projects: [summary('tc-admin-qa', 'id_tcap')] },
+    { name: 'bahtraku', projects: [summary('bahtraku', 'id_tb1'), summary('bahtraku', 'ums_pb')] },
   ];
 
-  test('is added to its owner\'s group in name order, or in a new group before the account\'s own, and never twice', () => {
+  test('is added to its owner\'s group in name order, or in a new group where the portfolio orders it (own account first, #195), and never twice', () => {
     expect(withCreated(portfolio, null, 'tc-admin-qa')).toBe(portfolio);
     const inGroup = withCreated(portfolio, summary('bahtraku', 'id_ult'), 'tc-admin-qa');
-    expect(inGroup[0]!.projects.map(p => p.ref.repo)).toEqual(['id_tb1', 'id_ult', 'ums_pb']);
+    expect(inGroup[1]!.projects.map(p => p.ref.repo)).toEqual(['id_tb1', 'id_ult', 'ums_pb']);
     const newGroup = withCreated(portfolio, summary('tc-admin-qa-org', 'id_obs'), 'tc-admin-qa');
-    expect(newGroup.map(group => group.name)).toEqual(['bahtraku', 'tc-admin-qa-org', 'tc-admin-qa']);
-    const own = withCreated([portfolio[0]!], summary('TC-Admin-QA', 'id_new'), 'tc-admin-qa');
-    expect(own.map(group => group.name)).toEqual(['bahtraku', 'TC-Admin-QA']);
+    expect(newGroup.map(group => group.name)).toEqual(['tc-admin-qa', 'bahtraku', 'tc-admin-qa-org']);
+    expect(withCreated(portfolio, summary('alpha', 'id_obs'), 'tc-admin-qa').map(group => group.name)).toEqual(['tc-admin-qa', 'alpha', 'bahtraku']);
+    const own = withCreated([portfolio[1]!], summary('TC-Admin-QA', 'id_new'), 'tc-admin-qa');
+    expect(own.map(group => group.name)).toEqual(['TC-Admin-QA', 'bahtraku']);
     expect(withCreated(portfolio, summary('bahtraku', 'id_tb1'), 'tc-admin-qa')).toBe(portfolio);
   });
 
@@ -254,9 +255,9 @@ describe('the project just created in the portfolio (S1)', () => {
     // Absent: Door43's catalog does not list it yet, so it is kept and shown.
     const kept = retireCreated(portfolio, created);
     expect(kept).toBe(created);
-    expect(withCreated(portfolio, kept, 'tc-admin-qa')[0]!.projects.map(p => p.ref.repo)).toContain('id_ult');
+    expect(withCreated(portfolio, kept, 'tc-admin-qa')[1]!.projects.map(p => p.ref.repo)).toContain('id_ult');
     // Listed: the read rules from now on.
-    const listed = [{ name: 'bahtraku', projects: [...portfolio[0]!.projects, { ...created, permissions: { push: true, admin: false, checked_at: '' } }] }, portfolio[1]!];
+    const listed = [portfolio[0]!, { name: 'bahtraku', projects: [...portfolio[1]!.projects, { ...created, permissions: { push: true, admin: false, checked_at: '' } }] }];
     const retired = retireCreated(listed, kept);
     expect(retired).toBeNull();
     // Absent again (access removed): the project stays out.

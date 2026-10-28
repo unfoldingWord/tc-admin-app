@@ -7,9 +7,9 @@
 // and lists the unsupported ones with their reasons (ADR 0014). The filter,
 // carried over from the prototype: a repository is listed when it is not
 // archived and Door43 explicitly grants push or admin (P1, P2). Projects are
-// grouped by owner, the account's organizations first and its own account
-// last (product spec §2), each group by repository name; the configurable
-// sort is #24.
+// grouped by owner, the account's own account first and then its
+// organizations by name (decided 28 October 2026 by Rich, #195; product spec
+// §2), each group by repository name; the configurable sort is #24.
 
 import type { OperationOutput, ParsedInput, ProjectSummary } from '@tc-admin/shared/schema';
 import { readAccount } from '../door43/auth';
@@ -45,7 +45,7 @@ export function projectSummary(repo: Door43SearchRepository, access: RepositoryA
 
 const byName = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: 'base' });
 
-/** Owner groups: organizations by name, then the account's own repositories. */
+/** Owner groups: the account's own repositories, then organizations by name (#195). */
 export function groupByOwner(projects: readonly ProjectSummary[], accountLogin: string): PortfolioList['organizations'] {
   const groups = new Map<string, ProjectSummary[]>();
   for (const project of projects) {
@@ -55,7 +55,7 @@ export function groupByOwner(projects: readonly ProjectSummary[], accountLogin: 
   }
   const own = (name: string) => name.toLowerCase() === accountLogin.toLowerCase();
   return [...groups.keys()]
-    .sort((a, b) => Number(own(a)) - Number(own(b)) || byName(a, b))
+    .sort((a, b) => Number(own(b)) - Number(own(a)) || byName(a, b))
     .map(name => ({ name, projects: groups.get(name)!.sort((a, b) => byName(a.ref.repo, b.ref.repo)) }));
 }
 
