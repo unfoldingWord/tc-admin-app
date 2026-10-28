@@ -4,7 +4,7 @@ This file is the entry point for anyone, human or agent, working in this reposit
 
 ## What this is
 
-tC Admin is a planned hosted web application that lets Bible translation managers set up a Bible or Open Bible Stories project, put its books in by upload or import, and release exactly the books they choose, all as Scripture Burrito and without thinking in git terms. The repository holds the product design, the decisions, the plan, one prototype (`prototypes/door43-mcp`, not a deliverable), and the application: `shared/schema/` (the operation catalog as Zod schemas), `worker/` (the Cloudflare Worker: Door43 adapter, model, operations, HTTP projection), and `web/` (Vite and React), laid out by [#7](https://github.com/unfoldingWord/tc-admin-app/issues/7) per the module map. Milestone 1 is due 21 October 2026 (moved from 16 October by Rich on 8 October 2026); its scope was re-set on 1 October 2026 and does not grow further, except for #124 and #125, which Rich added on 8 October 2026; the demo is on 21 October 2026 ([roadmap](docs/roadmap.md)).
+tC Admin is a planned hosted web application that lets Bible translation managers set up a Bible or Open Bible Stories project, put its books in by upload or import, and release exactly the books they choose, all as Scripture Burrito and without thinking in git terms. The repository holds the product design, the decisions, the plan, one prototype (`prototypes/door43-mcp`, not a deliverable), and the application: `shared/schema/` (the operation catalog as Zod schemas), `worker/` (the Cloudflare Worker: Door43 adapter, model, operations, HTTP projection), and `web/` (Vite and React), laid out by [#7](https://github.com/unfoldingWord/tc-admin-app/issues/7) per the module map. Milestone 1 is due 21 October 2026 (moved from 16 October by Rich on 8 October 2026); its scope was re-set on 1 October 2026, Rich added #124 and #125 on 8 October 2026, and on 27 October 2026, after the demo of 21 October, he reopened it for issues found in the demo and in setting it up ([roadmap](docs/roadmap.md)).
 
 ## The tower
 
@@ -32,7 +32,7 @@ Each document answers one question. Read downward for "why", upward for "how".
 | Implement an issue | the issue's Traceability section, the operations it names, the invariants it cites | build in the layer the module map names, add tests named with the invariant ids |
 | Change a rule or a state | CONTEXT.md, domain-model.md, invariants.md | write or amend an ADR; update identifiers everywhere they appear |
 | Ask "how does Door43 behave" | evidence.md | cite an `E` id; if absent, add a `Q` and probe only with credentials and a named host |
-| Change the plan | roadmap.md, the epic issue | keep Milestone 1 scope as re-set on 1 October 2026; record why |
+| Change the plan | roadmap.md, the epic issue | add to Milestone 1 only issues found in the demo and in setting it up (Rich, 27 October 2026); record why |
 | Touch the UI | product-spec.md §5–§10, the design system rules in #8 | glossary wording only; health never color alone |
 
 ## Five rules
