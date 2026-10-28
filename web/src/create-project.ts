@@ -118,6 +118,7 @@ export function missing(form: Form): FieldErrors {
   if (!form.owner) errors.owner = 'Choose an owner.';
   if (!form.title.trim()) errors.title = 'Give the project a title.';
   if (!abbreviationOf(form)) errors.abbreviation = 'Give the project an abbreviation, such as ULT.';
+  else if (form.project_type === 'bible' && abbreviationOf(form).toLowerCase() === ABBREVIATION_DEFAULTS.obs.toLowerCase()) errors.abbreviation = OBS_KEPT;
   if (!form.language) errors.language = 'Choose a language from the list.';
   else if (!form.language.tag_accepted) errors.language = tagRefused(form.language.code);
   if (form.project_type === 'bible' && !form.testament_scope) errors.testament_scope = 'Choose a testament scope for a Bible project.';
@@ -156,10 +157,14 @@ const FIELD_OF_PATH: Readonly<Record<string, Field>> = {
 };
 
 /** What a manager can do about a taken name (#192): a Bible's abbreviation can change; an Open Bible Stories project's is always OBS. */
-export const NAME_TAKEN_WAY_OUT: Readonly<Record<CreatableType, string>> = {
-  bible: 'Change the abbreviation, or choose another owner.',
-  obs: 'Every Open Bible Stories project is named <language>_obs, so choose another owner.',
+export const NAME_TAKEN_WAY_OUT: Readonly<Record<CreatableType, (repo: string | null) => string>> = {
+  bible: () => 'Change the abbreviation, or choose another owner.',
+  // The repository named, not a placeholder (bench round 1 on #200, George): an Open Bible Stories project in this language is always that name.
+  obs: repo => (repo ? `An Open Bible Stories project in this language is always named ${repo}, so choose another owner.` : 'An Open Bible Stories project in this language always has this name, so choose another owner.'),
 };
+
+/** A Bible may not be abbreviated OBS, which names Open Bible Stories projects (decided 28 October 2026 by Rich, bench round 1 on #200). */
+export const OBS_KEPT = 'OBS is kept for Open Bible Stories projects. Choose another abbreviation.';
 
 /**
  * The field a failure belongs to, with its message, so it is shown in place (X2):
@@ -171,7 +176,8 @@ export const NAME_TAKEN_WAY_OUT: Readonly<Record<CreatableType, string>> = {
  */
 export function fieldErrors(error: OperationErrorShape, type: CreatableType = 'bible'): FieldErrors | null {
   if (error.code === 'name_taken') {
-    const message = `${error.message} ${NAME_TAKEN_WAY_OUT[type]}`;
+    const repo = typeof error.details.repo_name === 'string' && error.details.repo_name ? error.details.repo_name : null;
+    const message = `${error.message} ${NAME_TAKEN_WAY_OUT[type](repo)}`;
     return type === 'obs' ? { owner: message } : { abbreviation: message };
   }
   if (error.code === 'permission_denied') return { owner: error.message };

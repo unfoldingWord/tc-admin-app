@@ -31,6 +31,7 @@ import {
   withCreated,
   withProjectType,
   abbreviationOf,
+  OBS_KEPT,
   TITLE_FIELD,
 } from '../src/create-project';
 import type { Form, Language, Owner } from '../src/create-project';
@@ -116,6 +117,9 @@ describe('the form', () => {
       testament_scope: 'Choose a testament scope for a Bible project.',
     });
     expect(missing(withProjectType(filled({ testament_scope: null }), 'obs'))).toEqual({});
+    // OBS names Open Bible Stories projects: a Bible may not take it, in any case (Rich, bench round 1 on #200).
+    expect(missing(filled({ abbreviation: ' obs ' }))).toEqual({ abbreviation: OBS_KEPT });
+    expect(OBS_KEPT).toBe('OBS is kept for Open Bible Stories projects. Choose another abbreviation.');
     expect(missing(filled({ language: dayakLaur }))).toEqual({ language: tagRefused('xdy-x-dayaklaur') });
     expect(tagRefused('xdy-x-dayaklaur')).toContain('xdy-x-dayaklaur');
   });
@@ -172,7 +176,9 @@ describe('where a failure is shown (X2)', () => {
     const taken = 'A repository named id_tcap already exists in tc-admin-qa-org.';
     expect(fieldErrors(error({ code: 'name_taken', message: taken }))).toEqual({ abbreviation: `${taken} Change the abbreviation, or choose another owner.` });
     const obsTaken = 'A repository named id_obs already exists in tc-admin-qa-org.';
-    expect(fieldErrors(error({ code: 'name_taken', message: obsTaken }), 'obs')).toEqual({ owner: `${obsTaken} Every Open Bible Stories project is named <language>_obs, so choose another owner.` });
+    expect(fieldErrors(error({ code: 'name_taken', message: obsTaken, details: { owner: 'tc-admin-qa-org', repo_name: 'id_obs' } }), 'obs')).toEqual({ owner: `${obsTaken} An Open Bible Stories project in this language is always named id_obs, so choose another owner.` });
+    // The repository is named, never a placeholder (bench round 1 on #200); an answer without it still gives the way out.
+    expect(fieldErrors(error({ code: 'name_taken', message: obsTaken }), 'obs')).toEqual({ owner: `${obsTaken} An Open Bible Stories project in this language always has this name, so choose another owner.` });
     expect(fieldErrors(error({ code: 'permission_denied', message: ERROR_CATALOG.permission_denied.message }))).toEqual({ owner: ERROR_CATALOG.permission_denied.message });
     expect(fieldErrors(error({ code: 'door43_unavailable', message: ERROR_CATALOG.door43_unavailable.message }))).toBeNull();
     expect(fieldErrors(error({ code: 'plan_expired', message: ERROR_CATALOG.plan_expired.message }))).toBeNull();

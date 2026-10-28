@@ -81,6 +81,6 @@ describe('the creation wizard (#192)', () => {
     const message = ERROR_CATALOG.name_taken.message.replace('<repo_name>', 'id_obs').replace('<owner>', 'tc-admin-qa-org');
     await worker.answer('POST', '/api/projects/plan', errorOf('name_taken', { owner: 'tc-admin-qa-org', repo_name: 'id_obs' }, message), 409);
     const owner = document.querySelector('legend')!.closest('fieldset')!;
-    expect(owner.querySelector('[role=alert]')?.textContent).toBe(`${message} Every Open Bible Stories project is named <language>_obs, so choose another owner.`);
+    expect(owner.querySelector('[role=alert]')?.textContent).toBe(`${message} An Open Bible Stories project in this language is always named id_obs, so choose another owner.`);
   });
 });
