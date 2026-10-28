@@ -1,11 +1,12 @@
 // A project's release preparations as the interface finds them again (#125):
 // which ones are still under way, to continue or discard, and which are
-// finished; the words for each; a preparation's own address; and the
-// preparation a `preparation_active` refusal names. Pure functions; the
-// stepper and the project view call the operations.
+// finished; the words for each; a preparation's own address; the preparation
+// a `preparation_active` refusal names; and what tC Admin recorded of making a
+// release Door43 no longer has (#188). Pure functions; the stepper, the
+// project view, and the release page call the operations.
 
 import type { OperationErrorShape, Preparation, PreparationState, ProjectSummary } from '@tc-admin/shared/schema';
-import { projectHash, releaseTagHash } from './portfolio-labels';
+import { projectHash } from './portfolio-labels';
 import { STATE_LABELS } from './release-stepper';
 
 type Ref = Pick<ProjectSummary, 'ref'>;
@@ -33,13 +34,6 @@ export const activeSummary = (preparation: Pick<Preparation, 'id' | 'version' | 
 /** A preparation's own address, `#/<owner>/<repo>/release/<version>`, so a reload lands back on it. */
 export const preparationHash = (project: Ref, id: string): string => `${projectHash(project)}/release/${encodeURIComponent(id)}`;
 
-/** Where a listed preparation leads: the stepper at it while under way, its release's page once released, nowhere once discarded. */
-export function preparationLink(project: Ref, preparation: Pick<Preparation, 'id' | 'state' | 'release'>): string | null {
-  if (isActive(preparation)) return preparationHash(project, preparation.id);
-  if (preparation.release) return releaseTagHash(project, preparation.release.tag);
-  return null;
-}
-
 /** The preparation a `preparation_active` refusal names (`details.preparation_id`, the version), or `null` for any other failure. */
 export function refusedFor(error: Pick<OperationErrorShape, 'code' | 'details'> | null): string | null {
   if (!error || error.code !== 'preparation_active') return null;
@@ -49,3 +43,29 @@ export function refusedFor(error: Pick<OperationErrorShape, 'code' | 'details'> 
 
 /** The list with one preparation replaced by its newer answer (after a discard), so the list need not be read again: Workers KV lists eventually. */
 export const withAnswer = <P extends Pick<Preparation, 'id'>>(preparations: readonly P[], answer: P): P[] => preparations.map(preparation => (preparation.id === answer.id ? answer : preparation));
+
+/** A release tC Admin recorded making under a tag: made as a pre-release or a full release, when, and when it was promoted, if it was. */
+export interface MadeRelease {
+  tag: string;
+  prerelease: boolean;
+  made_at: string;
+  promoted_at: string | null;
+}
+
+/**
+ * What the listed preparations record of making the release under `tag` (#188): the preparation released under it, and
+ * the history entries of its creation and its promotion. `null` when none records a release under that tag.
+ */
+export function madeRelease(preparations: readonly Pick<Preparation, 'state' | 'release' | 'history'>[], tag: string): MadeRelease | null {
+  const released = preparations.find(preparation => (preparation.state === 'pre_release' || preparation.state === 'full_release') && preparation.release?.tag === tag);
+  const made = released?.history.find(entry => entry.to === 'pre_release' || entry.to === 'full_release');
+  if (!released || !made) return null;
+  const promoted = released.history.find(entry => entry.from === 'pre_release' && entry.to === 'full_release');
+  return { tag, prerelease: made.to === 'pre_release', made_at: made.at, promoted_at: promoted?.at ?? null };
+}
+
+/** The release page's words for a release tC Admin made and Door43 no longer has (#188), each date as `date` writes it. */
+export function madeReleaseSentence(made: MadeRelease, date: (at: string) => string = at => new Date(at).toLocaleDateString()): string {
+  const promoted = made.promoted_at ? ` and promoted it to a full release on ${date(made.promoted_at)}` : '';
+  return `tC Admin made the ${made.prerelease ? 'pre-release' : 'full release'} ${made.tag} on ${date(made.made_at)}${promoted}. Door43 no longer has it: it may have been deleted on Door43.`;
+}
