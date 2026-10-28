@@ -71,6 +71,7 @@ Keep this file current: an issue's Traceability section and its row here say the
 | [#31](https://github.com/unfoldingWord-box3/tc-admin-app/issues/31) Setup incomplete | §6; §11 `setup_incomplete` | — | W4, X1, X2, A2 | E19, E45, E63, Q29 | `project.create.retry` | operations, door43/writes, model/git-blob, web | — |
 | [#167](https://github.com/unfoldingWord/tc-admin-app/issues/167) Create projects with the default branch main | §6 | 0008 | W1, W5 | E21, E27, E45, E79, E80 | `project.create.plan`, `project.create.apply` | model/burrito, door43/writes, operations, scripts/probe, scripts/seed-qa | S1 |
 | [#170](https://github.com/unfoldingWord/tc-admin-app/issues/170) Take a repository's default branch only from its default_branch | §6, §10 | 0008 | H3, R5 | E14, E79, E81 | `release.plan`, `release.prepare`, `release.create`, `preparation.read`, `source.search`, `project.create.apply`, `project.create.retry` | door43/catalog, door43/writes, scripts | — |
+| [#193](https://github.com/unfoldingWord/tc-admin-app/issues/193) Show a new project's details in plain terms when reviewing it, and its metadata.json only on request | §6 | 0011 | W1 | — | `project.create.plan` (its preview, unchanged) | web/CreateProject, web/create-project | S1 |
 
 ### EPIC: Selective release ([#41](https://github.com/unfoldingWord-box3/tc-admin-app/issues/41))
 

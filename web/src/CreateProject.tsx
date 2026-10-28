@@ -19,7 +19,7 @@
 // The wizard's last step is the upload (#76): the created project's view
 // offers "Add books" or "Add stories" at once.
 
-import { useCallback, useEffect, useId, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { OperationInput, OperationOutput, ProjectReport } from '@tc-admin/shared/schema';
 import { ApiError, callOperation, failureMessage } from './api/client';
@@ -34,6 +34,7 @@ import {
   fieldErrors,
   initialOwner,
   languageLabel,
+  metadataFacts,
   missing,
   newForm,
   outcomeUnknown,
@@ -285,10 +286,18 @@ export function CreateProject({ account, onCreated, onFailure }: Props) {
           <dd>
             <code>{plan.preview.repo_name}</code>
           </dd>
-          <dt>Project type</dt>
-          <dd>{typeLabel(submitted.project_type)}</dd>
           <dt>Plan valid until</dt>
           <dd>{time(plan.expires_at)}</dd>
+        </dl>
+        {/* What the metadata will say, in plain words, read from the plan; the JSON itself only on request (#193). */}
+        <h3>The project's details</h3>
+        <dl className="report" aria-label="The project's details">
+          {metadataFacts(plan.preview.metadata_json).map(fact => (
+            <Fragment key={fact.label}>
+              <dt>{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </Fragment>
+          ))}
         </dl>
         <h3>Door43 writes</h3>
         <ul className="writes">
@@ -321,8 +330,10 @@ export function CreateProject({ account, onCreated, onFailure }: Props) {
             ))}
           </tbody>
         </table>
-        <h3>metadata.json</h3>
-        <pre className="metadata">{JSON.stringify(plan.preview.metadata_json, null, 2)}</pre>
+        <details>
+          <summary>Show metadata.json</summary>
+          <pre className="metadata">{JSON.stringify(plan.preview.metadata_json, null, 2)}</pre>
+        </details>
         {plan.warnings.map(warning => (
           <p role="alert" key={warning.code}>
             {warning.message}
