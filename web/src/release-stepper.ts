@@ -62,10 +62,11 @@ export const ALL_BOOKS_LABELS: Readonly<Record<SelectionState, string>> = {
 /**
  * The selection with every book set to `state` where that choice applies, and every other book as it was (#191, Rich):
  * "Carry all forward" leaves a new book as it is. Leaving released books out this way removes them, as one by one does
- * (R2, R9): `removalsOf` lists them and the version must increase its first number.
+ * (R2, R9): `removalsOf` lists them and the version must increase its first number. A book outside `books`, in the
+ * stepper's other list (#190), keeps its choice: the result is the whole selection, which `release.prepare` takes.
  */
 export function selectAll(books: readonly Book[], selection: Selection, state: SelectionState): Selection {
-  return Object.fromEntries(books.map(book => [book.id, statesFor(book).includes(state) ? state : (selection[book.id] ?? book.selection)]));
+  return { ...selection, ...Object.fromEntries(books.map(book => [book.id, statesFor(book).includes(state) ? state : (selection[book.id] ?? book.selection)])) };
 }
 
 /**

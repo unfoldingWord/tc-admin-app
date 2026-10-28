@@ -50,6 +50,19 @@ describe('the selection (product spec §10)', () => {
     expect(canPrepare(books, allOut)).toBe(false);
   });
 
+  test('R2, R4: an all-books button on one list keeps every other book\'s choice, in both directions, so the selection sent names every book (#190)', () => {
+    const decide = books.filter(book => book.group !== 'unchanged');
+    const carried = books.filter(book => book.group === 'unchanged');
+    // The carried book left out, then "Include all" on the new and changed books: JHN stays left out, and stays a removal.
+    const afterInclude = selectAll(decide, { ...selectionOf(plan), jhn: 'leave_out' }, 'include');
+    expect(afterInclude).toEqual({ mat: 'include', mrk: 'include', jhn: 'leave_out' });
+    expect(removalsOf(books, afterInclude)).toEqual(['jhn']);
+    // A changed book included, then "Leave all out" on the carried books: MAT stays included.
+    const afterLeave = selectAll(carried, { ...selectionOf(plan), mat: 'include' }, 'leave_out');
+    expect(afterLeave).toEqual({ mat: 'include', mrk: 'leave_out', jhn: 'leave_out' });
+    expect(Object.keys(selectionToSend('bible', afterLeave)).sort()).toEqual(['jhn', 'mat', 'mrk']);
+  });
+
   test('R2: only a released book left out is a removal, named; a new book left out is not', () => {
     expect(removalsOf(books, selectionOf(plan))).toEqual([]);
     expect(removalsOf(books, { ...selectionOf(plan), jhn: 'leave_out' })).toEqual(['jhn']);
