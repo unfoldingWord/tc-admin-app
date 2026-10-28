@@ -9,7 +9,9 @@
 // release. "Add books" (or "Add stories") opens the upload screen in its
 // place (#76), and "Import books" (or "Import stories") the import screen
 // (#81); either receipt carries the project report, which then replaces the
-// one shown.
+// one shown. Each of the three actions says what it does under it (#196);
+// a release is opened from the latest full release or the outstanding
+// pre-release, the field that opened one by its tag removed (Rich, #196).
 
 import type { Preparation, ProjectReport, ProjectSummary } from '@tc-admin/shared/schema';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -23,9 +25,9 @@ import { coverageLabel, healthLabel, releaseHash, releaseTagHash, typeLabel } fr
 import { isActive, preparationLink, preparationVersion, withAnswer } from './preparations';
 import { STATE_LABELS, canDiscard } from './release-stepper';
 import { ImportScreen } from './ImportScreen';
-import { importAction } from './import';
+import { importAction, importHint } from './import';
 import { UploadScreen } from './UploadScreen';
-import { addAction, uploadTypeOf } from './upload';
+import { addAction, addHint, uploadTypeOf } from './upload';
 import type { UploadReceipt } from './upload';
 
 interface Props {
@@ -129,12 +131,15 @@ function uploadable(project: ProjectSummary | ProjectReport): boolean {
   return !('setup' in project) || project.setup.state === 'complete';
 }
 
+/** What "Prepare a release" does, under it on the project page (#196): an Open Bible Stories release takes the whole default branch. */
+export const releaseHint = (type: 'bible' | 'obs' | null): string =>
+  type === 'bible' ? 'Choose the books for a new release on Door43' : type === 'obs' ? 'Make a new release of the stories on Door43' : 'Make a new release on Door43';
+
 /** The heading of the project's books or stories (#158). */
 export const unitsHeading = (type: 'bible' | 'obs'): string => (type === 'bible' ? 'Books in this project' : 'Stories in this project');
 
 export function ProjectView({ project: given, onFailure }: Props) {
   const { owner, repo } = given.ref;
-  const [tag, setTag] = useState('');
   const [adding, setAdding] = useState<'upload' | 'import' | null>(null);
   // The last upload's or import's receipt and what it added: its project report replaces the one this view was given (#76, #81).
   const [uploaded, setUploaded] = useState<{ receipt: UploadReceipt; added: string } | null>(null);
@@ -320,37 +325,37 @@ export function ProjectView({ project: given, onFailure }: Props) {
           ))}
         </div>
       )}
-      <p className="actions">
+      {/* Each action with what it does under it, read with the action as its description (#196). */}
+      <div className="actions captioned">
         {type && uploadable(project) && (
           <>
-            <button type="button" onClick={() => setAdding('upload')}>
-              {addAction(type)}
-            </button>
-            <button type="button" className="secondary" onClick={() => setAdding('import')}>
-              {importAction(type)}
-            </button>
+            <span className="action">
+              <button type="button" onClick={() => setAdding('upload')} aria-describedby="project-add-hint">
+                {addAction(type)}
+              </button>
+              <span id="project-add-hint" className="muted">
+                {addHint(type)}
+              </span>
+            </span>
+            <span className="action">
+              <button type="button" className="secondary" onClick={() => setAdding('import')} aria-describedby="project-import-hint">
+                {importAction(type)}
+              </button>
+              <span id="project-import-hint" className="muted">
+                {importHint(type)}
+              </span>
+            </span>
           </>
         )}
-        <a className="button" href={releaseHash(project)}>
-          Prepare a release
-        </a>
-      </p>
-      <form
-        className="actions"
-        onSubmit={event => {
-          event.preventDefault();
-          if (tag.trim()) window.location.assign(releaseTagHash(project, tag.trim()));
-        }}
-      >
-        <label className="field" htmlFor="release-tag">
-          A release by its tag, to see it or promote a pre-release
-          {/* No remembered entries: a browser offered tags typed for other projects, none of them this one's (Rich, #161). */}
-          <input id="release-tag" value={tag} onChange={event => setTag(event.target.value)} placeholder="v1.3.0" autoComplete="off" />
-        </label>
-        <button type="submit" className="secondary" disabled={!tag.trim()}>
-          Open the release
-        </button>
-      </form>
+        <span className="action">
+          <a className="button" href={releaseHash(project)} aria-describedby="project-release-hint">
+            Prepare a release
+          </a>
+          <span id="project-release-hint" className="muted">
+            {releaseHint(type)}
+          </span>
+        </span>
+      </div>
       {/* Keyed by the project: another project mounts a fresh list in the same render, so none of the last project's rows, confirmation, or discard is offered under this one's name before its own list has arrived (#125). */}
       {onFailure && <Preparations key={`${project.ref.owner}/${project.ref.repo}`} project={project} onFailure={onFailure} />}
       {/* The project's books or stories, a section of their own after the preparations (#158); coverage Door43 does not itemize reads as unknown, never as none (H5). */}

@@ -6,6 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { multipartBody, operationRequest } from '../src/api/client';
 import {
   addAction,
+  addHint,
   applyUpload,
   canConfirm,
   confirmBlockers,
@@ -34,6 +35,8 @@ describe('wording', () => {
     expect(confirmLabel('obs', 2)).toBe('Add 2 stories');
     expect(addAction('bible')).toBe('Add books');
     expect(addAction('obs')).toBe('Add stories');
+    expect(addHint('bible')).toBe('Upload USFM files from your computer');
+    expect(addHint('obs')).toBe('Upload Markdown files from your computer');
   });
 
   test('W5: the summary of E64\'s plan names the one commit, the new and the replaced story, and the metadata entries', () => {

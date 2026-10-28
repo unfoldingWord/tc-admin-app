@@ -6,6 +6,7 @@ import { describe, expect, test } from 'vitest';
 import {
   canConfirmImport,
   importAction,
+  importHint,
   importBlockers,
   importConfirmLabel,
   importSummary,
@@ -105,6 +106,8 @@ describe('the plan of record', () => {
   test('wording: the actions name the write', () => {
     expect(importAction('bible')).toBe('Import books');
     expect(importAction('obs')).toBe('Import stories');
+    expect(importHint('bible')).toBe('Copy books from another project on Door43');
+    expect(importHint('obs')).toBe('Copy stories from another project on Door43');
     expect(importConfirmLabel('bible', 2)).toBe('Import 2 books');
     expect(importConfirmLabel('obs', 1)).toBe('Import 1 story');
   });
