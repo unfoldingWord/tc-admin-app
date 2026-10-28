@@ -15,7 +15,7 @@ const BASE = '/api/projects/bahtraku/PB-Adang-Edisi-Percobaan';
 const made = {
   ...preparationOf('bahtraku', 'PB-Adang-Edisi-Percobaan', 'v2.0.0', 'full_release'),
   release: { tag: 'v2.0.0', url: 'https://qa.door43.org/bahtraku/PB-Adang-Edisi-Percobaan/releases/tag/v2.0.0', prerelease: false },
-  history: [{ at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release' as const, to: 'full_release' as const, event: 'release created' }],
+  history: [{ at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release' as const, to: 'full_release' as const, event: 'release.create' }],
 };
 
 let worker: ReturnType<typeof heldWorker>;

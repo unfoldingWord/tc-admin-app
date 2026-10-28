@@ -147,17 +147,17 @@ describe('a release tC Admin made and Door43 no longer has (#188, E87)', () => {
       stored('v2.1.0', 'health_blocked'),
       released('v2.0.0', 'v2.0.0', [
         { at: '2026-10-07T20:10:00.000Z', from: 'snapshot_prepared', to: 'ready_for_release', event: 'health read' },
-        { at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release', to: 'full_release', event: 'release created' },
+        { at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release', to: 'full_release', event: 'release.create' },
       ]),
     ];
     const made = madeRelease(listed, 'v2.0.0');
-    expect(made).toEqual({ tag: 'v2.0.0', prerelease: false, made_at: '2026-10-07T20:18:00.000Z', promoted_at: null });
+    expect(made).toEqual({ tag: 'v2.0.0', prerelease: false, made_at: '2026-10-07T20:18:00.000Z', found: false, promoted_at: null, promotion_found: false });
     expect(madeReleaseSentence(made!, day)).toBe('tC Admin made the full release v2.0.0 on 2026-10-07. Door43 no longer has it: it may have been deleted on Door43.');
   });
 
   test('P3: a pre-release names the day it was made, and the day it was promoted when it was', () => {
     const made = [
-      { at: '2026-10-07T20:15:00.000Z', from: 'ready_for_release' as const, to: 'pre_release' as const, event: 'release created' },
+      { at: '2026-10-07T20:15:00.000Z', from: 'ready_for_release' as const, to: 'pre_release' as const, event: 'release.create' },
     ];
     const promoted = [...made, { at: '2026-10-09T08:00:00.000Z', from: 'pre_release' as const, to: 'full_release' as const, event: 'release.promote' }];
     expect(madeReleaseSentence(madeRelease([released('v1.1.1', 'v1.1.1', made, 'pre_release')], 'v1.1.1')!, day)).toBe('tC Admin made the pre-release v1.1.1 on 2026-10-07. Door43 no longer has it: it may have been deleted on Door43.');
@@ -166,8 +166,28 @@ describe('a release tC Admin made and Door43 no longer has (#188, E87)', () => {
     );
   });
 
+  test('P3: a release recorded when tC Admin found it already on Door43 is dated as recorded, not as made (bench round 1 on #197)', () => {
+    // The events release-create.ts writes when the lookup after a lost answer, or a refusal because the release existed, finds it (R6).
+    for (const event of ['release.lookup found the release of the unconfirmed attempt', 'release.create: Door43 had the release already']) {
+      const history: Preparation['history'] = [{ at: '2026-10-08T09:00:00.000Z', from: 'retryable_failure', to: 'full_release', event }];
+      const made = madeRelease([released('v2.0.0', 'v2.0.0', history)], 'v2.0.0')!;
+      expect(made.found, event).toBe(true);
+      expect(madeReleaseSentence(made, day)).toBe('tC Admin recorded the full release v2.0.0 on 2026-10-08, when it found the release already on Door43. Door43 no longer has it: it may have been deleted on Door43.');
+    }
+    const acknowledged: Preparation['history'] = [{ at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release', to: 'full_release', event: 'release.create, warnings acknowledged' }];
+    expect(madeRelease([released('v2.0.0', 'v2.0.0', acknowledged)], 'v2.0.0')?.found).toBe(false);
+    // A promotion whose answer was lost is recorded when Door43 is found to show the release full (release-promote.ts).
+    const promotedFound: Preparation['history'] = [
+      { at: '2026-10-07T20:15:00.000Z', from: 'ready_for_release', to: 'pre_release', event: 'release.create' },
+      { at: '2026-10-09T08:00:00.000Z', from: 'pre_release', to: 'full_release', event: 'release.promote, already full on Door43' },
+    ];
+    expect(madeReleaseSentence(madeRelease([released('v1.1.1', 'v1.1.1', promotedFound)], 'v1.1.1')!, day)).toBe(
+      'tC Admin made the pre-release v1.1.1 on 2026-10-07, and recorded its promotion to a full release on 2026-10-09. Door43 no longer has it: it may have been deleted on Door43.',
+    );
+  });
+
   test('P3: the release is found by its tag, which may be above the preparation id (R9); a preparation under way, discarded, or under another tag records none', () => {
-    const history: Preparation['history'] = [{ at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release', to: 'full_release', event: 'release created' }];
+    const history: Preparation['history'] = [{ at: '2026-10-07T20:18:00.000Z', from: 'ready_for_release', to: 'full_release', event: 'release.create' }];
     expect(madeRelease([released('v1.1.0', 'v2.0.0', history)], 'v2.0.0')?.made_at).toBe('2026-10-07T20:18:00.000Z');
     expect(madeRelease([released('v1.1.0', 'v2.0.0', history)], 'v1.1.0')).toBeNull();
     expect(madeRelease([stored('v2.0.0', 'ready_for_release'), stored('v2.0.0', 'discarded')], 'v2.0.0')).toBeNull();

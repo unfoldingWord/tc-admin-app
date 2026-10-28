@@ -44,13 +44,23 @@ export function refusedFor(error: Pick<OperationErrorShape, 'code' | 'details'> 
 /** The list with one preparation replaced by its newer answer (after a discard), so the list need not be read again: Workers KV lists eventually. */
 export const withAnswer = <P extends Pick<Preparation, 'id'>>(preparations: readonly P[], answer: P): P[] => preparations.map(preparation => (preparation.id === answer.id ? answer : preparation));
 
-/** A release tC Admin recorded making under a tag: made as a pre-release or a full release, when, and when it was promoted, if it was. */
+/**
+ * A release tC Admin recorded under a tag: made as a pre-release or a full release, when, and when it was promoted, if
+ * it was. `found` marks a release recorded when tC Admin found it already on Door43 (after a lost answer, or a refusal
+ * because it existed), whose date is when it was found, not made; `promotion_found` the same for a promotion (bench
+ * round 1 on #197).
+ */
 export interface MadeRelease {
   tag: string;
   prerelease: boolean;
   made_at: string;
+  found: boolean;
   promoted_at: string | null;
+  promotion_found: boolean;
 }
+
+/** The history events of a release or promotion tC Admin itself wrote (`release-create.ts`, `release-promote.ts`); any other recorded one was found on Door43. */
+const MADE_EVENTS: readonly string[] = ['release.create', 'release.create, warnings acknowledged', 'release.promote'];
 
 /**
  * What the listed preparations record of making the release under `tag` (#188): the preparation released under it, and
@@ -61,11 +71,13 @@ export function madeRelease(preparations: readonly Pick<Preparation, 'state' | '
   const made = released?.history.find(entry => entry.to === 'pre_release' || entry.to === 'full_release');
   if (!released || !made) return null;
   const promoted = released.history.find(entry => entry.from === 'pre_release' && entry.to === 'full_release');
-  return { tag, prerelease: made.to === 'pre_release', made_at: made.at, promoted_at: promoted?.at ?? null };
+  return { tag, prerelease: made.to === 'pre_release', made_at: made.at, found: !MADE_EVENTS.includes(made.event), promoted_at: promoted?.at ?? null, promotion_found: promoted ? !MADE_EVENTS.includes(promoted.event) : false };
 }
 
 /** The release page's words for a release tC Admin made and Door43 no longer has (#188), each date as `date` writes it. */
 export function madeReleaseSentence(made: MadeRelease, date: (at: string) => string = at => new Date(at).toLocaleDateString()): string {
-  const promoted = made.promoted_at ? ` and promoted it to a full release on ${date(made.promoted_at)}` : '';
-  return `tC Admin made the ${made.prerelease ? 'pre-release' : 'full release'} ${made.tag} on ${date(made.made_at)}${promoted}. Door43 no longer has it: it may have been deleted on Door43.`;
+  const kind = `${made.prerelease ? 'pre-release' : 'full release'} ${made.tag}`;
+  const recorded = made.found ? `tC Admin recorded the ${kind} on ${date(made.made_at)}, when it found the release already on Door43` : `tC Admin made the ${kind} on ${date(made.made_at)}`;
+  const promoted = !made.promoted_at ? '' : made.promotion_found ? `, and recorded its promotion to a full release on ${date(made.promoted_at)}` : ` and promoted it to a full release on ${date(made.promoted_at)}`;
+  return `${recorded}${promoted}. Door43 no longer has it: it may have been deleted on Door43.`;
 }
