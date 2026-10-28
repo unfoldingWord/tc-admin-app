@@ -78,9 +78,14 @@ describe('the form', () => {
 
   test('Open Bible Stories is always abbreviated OBS and has no testament scope; back to a Bible, OBS is cleared (#192, amending #82; Q25)', () => {
     const obs = withProjectType(filled({ abbreviation: '' }), 'obs');
-    expect(obs).toMatchObject({ project_type: 'obs', abbreviation: 'OBS', testament_scope: null });
+    expect(obs).toMatchObject({ project_type: 'obs', testament_scope: null });
+    expect(abbreviationOf(obs)).toBe('OBS');
     expect(withProjectType(obs, 'bible')).toMatchObject({ project_type: 'bible', abbreviation: '', testament_scope: null });
-    expect(withProjectType(filled({ abbreviation: 'TCAP' }), 'obs')).toMatchObject({ abbreviation: 'OBS', testament_scope: null });
+    // Bible → Open Bible Stories → Bible keeps the abbreviation the manager wrote; the plan in between sends OBS.
+    const between = withProjectType(filled({ abbreviation: 'TCAP' }), 'obs');
+    expect(between).toMatchObject({ abbreviation: 'TCAP', testament_scope: null });
+    expect(planInput({ ...between, language: pendau }).abbreviation).toBe('OBS');
+    expect(withProjectType(between, 'bible').abbreviation).toBe('TCAP');
     expect(withProjectType(withProjectType(filled({ abbreviation: 'obs ' }), 'obs'), 'bible').abbreviation).toBe('');
     // A draft resumed from before #192 may hold another abbreviation: the form still sends OBS and names the repository <language>_obs.
     const resumed = { ...filled({ abbreviation: 'TCAP' }), project_type: 'obs' as const, testament_scope: null };

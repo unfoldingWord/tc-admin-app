@@ -69,15 +69,16 @@ export function newForm(owner: string): Form {
 }
 
 /**
- * The form after a change of project type: Open Bible Stories takes OBS and no testament scope (Q25, #192); back to a
- * Bible, the abbreviation the manager wrote before is kept, and OBS is cleared.
+ * The form after a change of project type: Open Bible Stories has no testament scope (Q25) and sends OBS through
+ * `abbreviationOf` (#192), so the field keeps a Bible's abbreviation for a return to a Bible; there, an OBS a draft
+ * from before #192 held is cleared.
  */
 export function withProjectType(form: Form, type: CreatableType): Form {
   const written = form.abbreviation.trim().toLowerCase() === ABBREVIATION_DEFAULTS.obs.toLowerCase() ? '' : form.abbreviation;
   return {
     ...form,
     project_type: type,
-    abbreviation: type === 'obs' ? ABBREVIATION_DEFAULTS.obs : written,
+    abbreviation: type === 'obs' ? form.abbreviation : written,
     testament_scope: type === 'obs' ? null : form.testament_scope,
   };
 }
