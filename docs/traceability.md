@@ -89,6 +89,7 @@ Keep this file current: an issue's Traceability section and its row here say the
 | [#156](https://github.com/unfoldingWord/tc-admin-app/issues/156) Open the latest release from the project page | §10 | — | R8 | E57 | `project.read` (display), `release.lookup` | web/ProjectView | S7 |
 | [#161](https://github.com/unfoldingWord/tc-admin-app/issues/161) Polish what the demo walkthrough found | §6, §8, §10 | — | R9, H4 | — | `release.create`, `release.promote`, `project.create.plan`, `project.create.apply`, `import.plan` (display) | model/notes, web (ReleaseStepper, CreateProject, ImportScreen, UploadScreen, HealthFindings) | S4, S7 |
 | [#162](https://github.com/unfoldingWord/tc-admin-app/issues/162) Show a project's outstanding pre-release on its page | §10 | — | R8 | E14, E57, E75 | `project.read`, `project.refresh` | door43/catalog, operations/project-read, shared/schema, web/ProjectView | S7 |
+| [#191](https://github.com/unfoldingWord/tc-admin-app/issues/191) Line up the three choices on every book, disable the one that does not apply, and add choices for all books | §10 | — | R1, R2, R4, R9 | — | `release.prepare` (unchanged) | web/ReleaseStepper, web/release-stepper | S3, S8 |
 
 ### EPIC: Add books: upload and import ([#45](https://github.com/unfoldingWord-box3/tc-admin-app/issues/45), [#47](https://github.com/unfoldingWord-box3/tc-admin-app/issues/47))
 

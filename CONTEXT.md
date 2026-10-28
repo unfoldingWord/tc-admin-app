@@ -85,7 +85,7 @@ A book that was in the latest full release and that the manager left out of a ne
 _Avoid_: Deleted book, unpublished book (in user-facing copy)
 
 **Selection state**:
-The state of one book in a release selection, shown as a three-state checkbox. **Include** (checked): the book's current file from the default branch goes into the release, new or changed. **Carry forward** (dash): the file from the previous release, untouched. **Leave out** (blank): the book is not in the new release; a previously released book becomes removed content. A first release starts with every book included; a later release starts with previously released books carried forward and new books left out. Open Bible Stories projects have no selection: a release takes the whole default branch.
+The state of one book in a release selection, shown as three radio buttons in the same columns on every row, a choice that does not apply disabled (#191; first described as a three-state checkbox). **Include**: the book's current file from the default branch goes into the release, new or changed. **Carry forward**: the file from the previous release, untouched; only a book in the last release can be carried forward. **Leave out**: the book is not in the new release; a previously released book becomes removed content. A first release starts with every book included; a later release starts with previously released books carried forward and new books left out. Open Bible Stories projects have no selection: a release takes the whole default branch.
 _Avoid_: Checked, ticked, unchecked, excluded (in user-facing copy)
 
 **Pre-release**:

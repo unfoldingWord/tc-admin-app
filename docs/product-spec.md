@@ -184,11 +184,13 @@ A health result of severity `warning` on the release snapshot does not block rel
 
 A project is released when its manager says it is ready and Door43's health check passes. The manager prepares a release for one project at a time.
 
-For a Bible project, every book present on the default branch or in the latest full release is listed with a three-state checkbox (decided 1 October 2026):
+For a Bible project, every book present on the default branch or in the latest full release is listed with three choices (decided 1 October 2026; built as radio buttons, which Rich and Birch found clearer than the three-state checkbox first described, 27 October 2026, #191):
 
-- **Include** (checked): the book's current file from the default branch goes into the release, whether the book is new or changed.
-- **Carry forward** (dash): the file from the previous release, untouched by whatever is on the default branch.
-- **Leave out** (blank): the book is not in the new release. A previously released book left out is removed from this release onward; earlier releases keep it.
+- **Include**: the book's current file from the default branch goes into the release, whether the book is new or changed.
+- **Carry forward**: the file from the previous release, untouched by whatever is on the default branch.
+- **Leave out**: the book is not in the new release. A previously released book left out is removed from this release onward; earlier releases keep it.
+
+Every row shows the three choices in the same columns; a choice that does not apply, Carry forward for a book not in the last release, is shown disabled and says why. Above the list, "Include all", "Carry all forward", and "Leave all out" set every book at once, each skipping the books its choice does not apply to; a released book left out this way is a removal, listed and needing a major version, as one left out by itself (decided 27 and 28 October 2026 by Rich and Birch, #191).
 
 Defaults: a first release starts with every book included. A later release starts with every previously released book carried forward, changed or not, and every new book left out, so nothing new or changed goes out unless the manager includes it. The meaning of the three states is shown beside the list. A release needs at least one included or carried-forward book.
 

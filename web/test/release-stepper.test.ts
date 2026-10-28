@@ -6,7 +6,7 @@ import { catalogMessage } from '@tc-admin/shared/schema';
 import type { Preparation } from '@tc-admin/shared/schema';
 import { describe, expect, test } from 'vitest';
 import { hashRef, releaseHash, releaseTagHash } from '../src/portfolio-labels';
-import { RESTART_MESSAGE, STEPS, canDiscard, canPrepare, counts, onProjectHost, releaseGate, removalsOf, selectionOf, selectionToSend, spellVersion, statesFor, stepOf, storySummary, versionToSend } from '../src/release-stepper';
+import { ALL_BOOKS_LABELS, RESTART_MESSAGE, STEPS, canDiscard, canPrepare, counts, onProjectHost, releaseGate, removalsOf, selectAll, selectionOf, selectionToSend, spellVersion, statesFor, stepOf, storySummary, unavailableReason, versionToSend } from '../src/release-stepper';
 import type { Book } from '../src/release-stepper';
 
 const books: Book[] = [
@@ -27,6 +27,24 @@ describe('the selection (product spec §10)', () => {
     expect(statesFor({ group: 'new' })).toEqual(['include', 'leave_out']);
     expect(statesFor({ group: 'changed_released' })).toEqual(['include', 'carry_forward', 'leave_out']);
     expect(counts(books, selectionOf(plan))).toEqual({ include: 0, carry_forward: 2, leave_out: 1 });
+  });
+
+  test('R4: a choice that does not apply says why: only a book in the last release can be carried forward (#191)', () => {
+    expect(unavailableReason({ group: 'new' }, 'carry_forward')).toBe('not in the last release');
+    expect(unavailableReason({ group: 'unknown' }, 'carry_forward')).toBe('not a book the last release is known to have');
+    for (const state of ['include', 'leave_out'] as const) expect(unavailableReason({ group: 'new' }, state)).toBeNull();
+    for (const state of ['include', 'carry_forward', 'leave_out'] as const) expect(unavailableReason({ group: 'unchanged' }, state)).toBeNull();
+  });
+
+  test('R2, R4: the all-books buttons set every book their choice applies to and leave the rest; leaving all out removes every released book (#191)', () => {
+    expect(ALL_BOOKS_LABELS).toEqual({ include: 'Include all', carry_forward: 'Carry all forward', leave_out: 'Leave all out' });
+    expect(selectAll(books, selectionOf(plan), 'include')).toEqual({ mat: 'include', mrk: 'include', jhn: 'include' });
+    // A new book cannot be carried forward: it keeps its choice.
+    expect(selectAll(books, { mat: 'include', mrk: 'include', jhn: 'leave_out' }, 'carry_forward')).toEqual({ mat: 'carry_forward', mrk: 'include', jhn: 'carry_forward' });
+    const allOut = selectAll(books, selectionOf(plan), 'leave_out');
+    expect(allOut).toEqual({ mat: 'leave_out', mrk: 'leave_out', jhn: 'leave_out' });
+    expect(removalsOf(books, allOut)).toEqual(['mat', 'jhn']);
+    expect(canPrepare(books, allOut)).toBe(false);
   });
 
   test('R2: only a released book left out is a removal, named; a new book left out is not', () => {
